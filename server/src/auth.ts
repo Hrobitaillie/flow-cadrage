@@ -68,12 +68,15 @@ export function identityFromHeaders(get: HeaderGetter): Identity {
   const avatar = firstHeaderFrom(get, PICTURE_HEADERS)
 
   if (!subject && !name && !email) {
-    // Aucun header d'auth : contexte hors-Caddy (dev local direct sur le port).
+    // Aucun header d'auth : contexte hors-Caddy (mode solo local, ou dev direct sur le
+    // port). FLOOOW_USER personnalise l'identité affichée (auteur des commentaires,
+    // bulle de présence) sans aucune infra d'auth.
+    const localUser = (process.env.FLOOOW_USER ?? '').trim()
     return {
-      id: 'anonyme',
-      name: 'Anonyme',
+      id: localUser ? localUser.toLowerCase().replace(/\s+/g, '-') : 'anonyme',
+      name: localUser || 'Anonyme',
       email: null,
-      role: 'dev', // en dev direct on ne bride pas ; en prod Caddy fournit toujours l'auth
+      role: 'dev', // en solo/dev direct on ne bride pas ; en prod Caddy fournit toujours l'auth
       avatar: null,
       authenticated: false,
     }

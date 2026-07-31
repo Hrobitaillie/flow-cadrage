@@ -11,10 +11,12 @@ function env(name: string, fallback: string): string {
   return v && v.length > 0 ? v : fallback
 }
 
+const port = Number(env('PORT', '3010'))
+
 export const config = {
   /** Port d'écoute du serveur Node sur l'hôte. Le container Caddy y proxy via
    *  host.containers.internal:<port> (cf .caddy-upstream). */
-  port: Number(env('PORT', '3010')),
+  port,
 
   /** Adresse d'écoute. 0.0.0.0 REQUIS pour que le Caddy du container atteigne
    *  l'hôte via host.containers.internal. Le port brut doit rester derrière le
@@ -34,8 +36,14 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
 
-  /** URL publique de l'app (liens directs vers /p/<dossier>/<fichier> rendus par la CLI). */
-  appUrl: env('APP_URL', 'https://flooow.d.pilot-in.net').replace(/\/$/, ''),
+  /** URL publique de l'app (liens directs vers /p/<dossier>/<fichier> rendus par la CLI).
+   *  Défaut = usage solo local : le serveur sert lui-même l'app buildée (cf appDist).
+   *  Derrière un Caddy/AuthCrunch, fournir APP_URL explicitement. */
+  appUrl: env('APP_URL', `http://localhost:${port}`).replace(/\/$/, ''),
+
+  /** Build de l'app à servir en statique (SPA + fallback index.html). Si le dossier
+   *  n'existe pas (dev via Vite), le serveur ne sert que /api et /collab comme avant. */
+  appDist: resolve(env('APP_DIST', resolve(REPO_ROOT, 'app', 'dist'))),
 } as const
 
 export type Config = typeof config

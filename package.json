@@ -2,9 +2,11 @@
   "name": "flooow",
   "version": "0.0.1",
   "private": true,
-  "description": "Flooow — cadrage visuel multi-user (front app/ + serveur server/)",
+  "description": "Flooow — cadrage visuel agentique (front app/ + serveur server/ + CLI flooow)",
   "scripts": {
     "dev": "bash scripts/dev.sh",
+    "start": "pnpm -s -C server start",
+    "build": "npm --prefix app run build",
     "cadrage": "serve cadrage",
     "flooow": "pnpm -s -C server flooow"
   },
