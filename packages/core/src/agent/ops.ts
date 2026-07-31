@@ -104,7 +104,7 @@ export class AgentOpError extends Error {
 // ── Champs autorisés par `update` (tout le reste a un op dédié ou est interdit) ─
 
 const UPDATABLE: Record<string, Set<string>> = {
-  page: new Set(['name', 'slug', 'roles', 'description', 'constraints', 'logic', 'notes', 'lot']),
+  page: new Set(['name', 'slug', 'roles', 'description', 'constraints', 'logic', 'notes', 'lot', 'parent']),
   block: new Set(['name', 'blockType', 'lot']),
   module: new Set(['name', 'description', 'notes', 'lot']),
   feature: new Set(['name', 'code', 'estimate', 'lot']),
@@ -497,7 +497,17 @@ export function applyOps(input: ProjectDoc, ops: AgentOp[]): ApplyResult {
           const kindKey = target.type === 'feature' ? 'feature' : (target as { kind: string }).kind
           applySet(kindKey, (key, value) => {
             if (key === 'lot') target.lot = value as number | null
-            else (target.attrs as unknown as Record<string, unknown>)[key] = value
+            else if (key === 'parent') {
+              // Re-parentage de page (v12 : hiérarchie de pages = hiérarchie d'URL). null → racine.
+              // Un cycle serait refusé par l'invariant PARENT_CYCLE à la validation finale du lot.
+              if (value === null) target.parentId = null
+              else {
+                const parent = node(String(value), 'page')
+                if (!isPage(parent)) fail(`« ${String(value)} » n'est pas une page.`)
+                if (parent.id === target.id) fail('une page ne peut pas être sa propre parente.')
+                target.parentId = parent.id
+              }
+            } else (target.attrs as unknown as Record<string, unknown>)[key] = value
           })
         }
         report.push(`~ ${ref.name} (${shortId(ref.id)}) : ${Object.keys(op.set).join(', ')}`)

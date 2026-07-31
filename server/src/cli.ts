@@ -95,6 +95,8 @@ Commentaires (v13 — fils ancrés page/bloc, lus dans le panneau 💬 de l'app)
 
 Modifications :
   {"op":"update","target":"<poignée>","set":{"name":"…","slug":"…","lot":3}}   champs selon le type
+      → pages aussi : "parent":"<poignée page>" (re-parentage, null = racine). La hiérarchie de
+        pages EST la hiérarchie d'URL : le slug d'une page est son SEGMENT, la route se recompose.
   {"op":"set-content","target":"<bloc|fonctionnalité>","markdown":"…"}           remplace le contenu
   {"op":"set-field","feature":"<poignée>","field":"perimeter|libellé","option":"Site"}  crée l'option si absente
   {"op":"set-site","context":"…","constraints":["…"]}
