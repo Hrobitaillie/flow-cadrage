@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveCatalog } from '@/domain/derive/catalog'
+import { deriveCatalog } from '@flooow/core/domain/derive/catalog'
 import {
   createEmptyProject,
   createPage,
@@ -9,12 +9,15 @@ import {
   createApiNote,
   createService,
   createEdge,
-} from '@/model/factory'
-import { mergeFeatureFields, docToPlainText } from '@/model/richContent'
-import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@/model/types'
+} from '@flooow/core/model/factory'
+import { mergeFeatureFields, docToPlainText } from '@flooow/core/model/richContent'
+import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@flooow/core/model/types'
+
+// Une option de projet (v7) pour le champ « perimeter » amorcé par createEmptyProject.
+const OPT_SITE = { id: 'opt-site', fieldId: 'perimeter', name: 'Site' }
 
 function doc(nodes: FlooowNode[], edges: FlooowEdge[] = [], services: Service[] = []): ProjectDoc {
-  return { ...createEmptyProject(), nodes, edges, services }
+  return { ...createEmptyProject(), featureOptions: [OPT_SITE], nodes, edges, services }
 }
 
 // Module « Devis » avec deux fonctionnalités empilées ; DEV-06 dépend de DEV-04.
@@ -26,7 +29,7 @@ const dev04 = createFeature({
   name: 'Formulaire de devis',
   position: { x: 0, y: 0 },
   lot: 1,
-  attrs: { code: 'DEV-04', name: 'Formulaire de devis', content: mergeFeatureFields({ description: 'saisir une demande', implies: 'POST location' }), perimeter: 'site', estimate: '3j' },
+  attrs: { code: 'DEV-04', name: 'Formulaire de devis', content: mergeFeatureFields({ description: 'saisir une demande', implies: 'POST location' }), fieldValues: { perimeter: OPT_SITE.id }, estimate: '3j' },
 })
 const dev06 = createFeature({
   id: 'dev06',
@@ -34,7 +37,7 @@ const dev06 = createFeature({
   code: 'DEV-06',
   name: 'Email de confirmation',
   position: { x: 0, y: 152 },
-  attrs: { code: 'DEV-06', name: 'Email de confirmation', content: { type: 'doc', content: [] }, perimeter: null, estimate: '' },
+  attrs: { code: 'DEV-06', name: 'Email de confirmation', content: { type: 'doc', content: [] }, estimate: '' },
 })
 const dependency = createEdge({ type: 'dependsOn', source: 'dev06', target: 'dev04' })
 
@@ -53,12 +56,23 @@ describe('deriveCatalog — structure par module', () => {
     expect(cat.groups[0]!.features.map((f) => f.code)).toEqual(['DEV-04', 'DEV-06'])
   })
 
-  it('fusionne contenu / lot résolu / périmètre / estimation', () => {
+  it('fusionne contenu / lot résolu / estimation', () => {
     const card = deriveCatalog(full).groups[0]!.features[0]!
-    expect(card).toMatchObject({ code: 'DEV-04', perimeter: 'site', estimate: '3j', lot: 1 })
+    expect(card).toMatchObject({ code: 'DEV-04', estimate: '3j', lot: 1 })
     const text = docToPlainText(card.content)
     expect(text).toContain('saisir une demande')
     expect(text).toContain('POST location')
+  })
+
+  it('résout les champs de projet en libellé + valeur, et rend null ce qui n’est pas renseigné', () => {
+    const [card04, card06] = deriveCatalog(full).groups[0]!.features
+    // Un CatalogFieldValue par champ du projet, dans l'ordre d'affichage — même pour DEV-06 qui
+    // n'en renseigne aucun : les vues tabulaires ont besoin d'une cellule par colonne.
+    expect(card04!.fields).toEqual([
+      { fieldId: 'binding', label: 'Branchement sur le site', value: null },
+      { fieldId: 'perimeter', label: 'Fonctionnalité attribuée à', value: 'Site' },
+    ])
+    expect(card06!.fields.map((f) => f.value)).toEqual([null, null])
   })
 
   it('dépend de / débloque calculés dans les deux sens', () => {

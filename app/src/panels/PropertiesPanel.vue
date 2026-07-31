@@ -17,7 +17,6 @@ import { useUiStore } from '@/stores/ui'
 import { useProjectStore, type AttrsPatch, SITE_SELECTION_ID } from '@/stores/project'
 import { usePanelState } from '@/composables/useKeyboard'
 import {
-  BLOCK_TYPES,
   isApiNote,
   isBehaviorNote,
   isBlock,
@@ -25,11 +24,13 @@ import {
   isModule,
   isNote,
   isPage,
-} from '@/model/types'
-import type { BlockType, Facet, FlooowNode, Perimeter, Risk } from '@/model/types'
+} from '@flooow/core/model/types'
+import type { Facet, FlooowNode, Risk } from '@flooow/core/model/types'
+import { normalizeSlug } from '@flooow/core/domain/routes'
 import { lotColor } from '@/theme/tokens'
 import FloatingPanel from './FloatingPanel.vue'
 import RealizationSection from './RealizationSection.vue'
+import FeatureFieldSelect from './FeatureFieldSelect.vue'
 
 const ui = useUiStore()
 const project = useProjectStore()
@@ -42,16 +43,8 @@ const FACETS: { id: '' | Facet; label: string }[] = [
   { id: 'fullstack', label: 'Fullstack' },
 ]
 const RISKS: Risk[] = ['low', 'medium', 'high']
-const PERIMETER_OPTIONS: { id: '' | Perimeter; label: string }[] = [
-  { id: '', label: 'Aucun' },
-  { id: 'site', label: 'Site' },
-  { id: 'editor', label: 'Éditeur' },
-  { id: 'internal', label: 'Interne' },
-  { id: 'external', label: 'Externe' },
-]
 const LOT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-const BLOCK_TYPE_OPTIONS: BlockType[] = BLOCK_TYPES
 
 /** Libellé lisible d'un nœud (les notes API n'ont pas de champ `name`). */
 function nodeName(n: FlooowNode): string {
@@ -95,7 +88,7 @@ const lotSourceName = computed(() => {
 const buf = reactive({
   name: '',
   description: '',
-  route: '',
+  slug: '', // segment d'URL propre à la page (v12) ; la route complète est dérivée
   roles: '', // séparé par virgules
   constraints: '', // une contrainte par ligne
   logic: '',
@@ -111,7 +104,6 @@ const buf = reactive({
   // fonctionnalité (couche fonctionnelle)
   code: '',
   implies: '',
-  perimeter: '' as '' | Perimeter,
   estimate: '',
   toConfirm: '',
 })
@@ -156,18 +148,20 @@ function loadBuffer(id: string | null): void {
   const n = project.nodeById(id)
   if (!n) return
   bufferedId = id
-  buf.notes = isFeature(n) ? '' : n.attrs.notes // la fonctionnalité n'a plus de champ `notes` (v4)
+  // La fonctionnalité (v4) et le bloc (v8) n'ont plus de champ `notes` : leur contenu est un
+  // document riche, édité dans leur carte et non ici.
+  buf.notes = isFeature(n) || isBlock(n) ? '' : n.attrs.notes
   if (isPage(n)) {
     buf.name = n.attrs.name
     buf.description = n.attrs.description
-    buf.route = n.attrs.route ?? ''
+    buf.slug = n.attrs.slug
     buf.roles = (n.attrs.roles ?? []).join(', ')
     buf.constraints = n.attrs.constraints.join('\n')
     buf.logic = n.attrs.logic
   } else if (isBlock(n)) {
+    // Bloc : nom seulement (le contenu riche s'édite dans la carte, les connexions API se commitent
+    // directement — même découpage que la fonctionnalité).
     buf.name = n.attrs.name
-    buf.description = n.attrs.description
-    buf.constraints = n.attrs.constraints.join('\n')
   } else if (isModule(n)) {
     buf.name = n.attrs.name
     buf.description = n.attrs.description
@@ -175,7 +169,6 @@ function loadBuffer(id: string | null): void {
     // Fonctionnalité : champs structurés seulement (le contenu riche s'édite dans l'éditeur split).
     buf.name = n.attrs.name
     buf.code = n.attrs.code
-    buf.perimeter = n.attrs.perimeter ?? ''
     buf.estimate = n.attrs.estimate
   } else if (isBehaviorNote(n)) {
     buf.name = n.attrs.name
@@ -200,7 +193,7 @@ function buildPatch(id: string): AttrsPatch | null {
   if (isPage(n)) {
     return {
       name: buf.name,
-      route: buf.route,
+      slug: normalizeSlug(buf.slug),
       roles: toList(buf.roles),
       description: buf.description,
       constraints: toLines(buf.constraints),
@@ -209,21 +202,20 @@ function buildPatch(id: string): AttrsPatch | null {
     }
   }
   if (isBlock(n)) {
-    return {
-      name: buf.name,
-      description: buf.description,
-      constraints: toLines(buf.constraints),
-      notes: buf.notes,
-    }
+    // `content` et `apiRefs` sont absents du patch : ils se commitent hors buffer (carte / sélecteur
+    // d'API), les inclure ici écraserait une saisie faite pendant que le flush est débouncé —
+    // même raison que `fieldValues` pour la fonctionnalité.
+    return { name: buf.name }
   }
   if (isModule(n)) {
     return { name: buf.name, description: buf.description, notes: buf.notes }
   }
   if (isFeature(n)) {
+    // `fieldValues` est absent du patch : FeatureFieldSelect commite lui-même, sans passer par le
+    // buffer — l'inclure ici écraserait un choix fait pendant la frappe (le flush est débouncé).
     return {
       code: buf.code,
       name: buf.name,
-      perimeter: buf.perimeter === '' ? null : buf.perimeter,
       estimate: buf.estimate,
     }
   }
@@ -289,13 +281,6 @@ function setFacet(value: string): void {
     const n = project.nodeById(id)
     if (n && isNote(n)) project.updateAttrs(id, { facet })
   }
-}
-
-// ── Type de bloc (commit immédiat) ─────────────────────────────────────────────
-function setBlockType(value: string): void {
-  const id = ui.selectedId
-  if (!id) return
-  project.setBlockType(id, value as BlockType)
 }
 
 // ── Note API : service + endpoint (autocomplétion) ─────────────────────────────
@@ -398,7 +383,7 @@ const collapsed = computed({
 })
 
 const inputClass =
-  'w-full rounded-md border border-black/10 bg-white/70 px-2 py-1.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:border-white/15 dark:bg-zinc-800/70 dark:text-zinc-100'
+  'w-full rounded-md border border-black/10 bg-white/70 px-2 py-1.5 text-sm text-slate-800 outline-hidden transition focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:border-white/15 dark:bg-zinc-800/70 dark:text-zinc-100'
 const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-zinc-400'
 </script>
 
@@ -406,7 +391,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
   <FloatingPanel :padded="false" role="complementary" aria-label="Propriétés">
     <div ref="panelRef" class="flex max-h-[80vh] w-80 flex-col">
       <!-- En-tête : type + complétude + repli -->
-      <header class="flex items-center gap-2 border-b border-black/[0.06] px-3 py-2 dark:border-white/10">
+      <header class="flex items-center gap-2 border-b border-black/6 px-3 py-2 dark:border-white/10">
         <span class="text-sm font-semibold">{{ isMulti ? `${selectedIds.length} éléments` : nodeKindLabel }}</span>
         <span
           v-if="!isMulti && !completeness.complete"
@@ -418,7 +403,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
         </span>
         <button
           type="button"
-          class="ml-auto rounded-md p-1 text-slate-400 hover:bg-black/5 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:hover:bg-white/10"
+          class="ml-auto rounded-md p-1 text-slate-400 hover:bg-black/5 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-cyan-500 dark:hover:bg-white/10"
           :aria-label="collapsed ? 'Déplier le panneau (⌥.)' : 'Replier le panneau (⌥.)'"
           :title="collapsed ? 'Déplier (⌥.)' : 'Replier (⌥.)'"
           @click="collapsed = !collapsed"
@@ -462,9 +447,23 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
 
           <!-- ── Page ── -->
           <template v-if="isPage(node)">
+            <!-- Segment SEUL : la route complète se recompose depuis les pages parentes (v12), on
+                 l'affiche en lecture pour que l'utilisateur voie ce qu'il fabrique. Une page racine
+                 au segment vide, c'est l'accueil de son arbre — d'où le placeholder distinct. -->
             <div>
-              <label :class="labelClass" for="pp-route">Route</label>
-              <input id="pp-route" v-model="buf.route" :class="inputClass" type="text" placeholder="/tableau-de-bord" @input="scheduleCommit" @blur="flush" />
+              <label :class="labelClass" for="pp-slug">
+                {{ node.parentId ? 'Segment d’URL' : 'Segment d’URL (vide = accueil)' }}
+              </label>
+              <input
+                id="pp-slug"
+                v-model="buf.slug"
+                :class="inputClass"
+                type="text"
+                :placeholder="node.parentId ? 'tableau-de-bord' : ''"
+                @input="scheduleCommit"
+                @blur="flush"
+              />
+              <p class="mt-1 font-mono2 text-[11px] text-slate-500">{{ project.routeOf(node.id) }}</p>
             </div>
             <div>
               <label :class="labelClass" for="pp-roles">Rôles (séparés par des virgules)</label>
@@ -484,23 +483,10 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
             </div>
           </template>
 
-          <!-- ── Bloc ── -->
-          <template v-else-if="isBlock(node)">
-            <div>
-              <label :class="labelClass" for="pp-blocktype">Type de bloc</label>
-              <select id="pp-blocktype" :class="inputClass" :value="node.attrs.blockType" @change="setBlockType(($event.target as HTMLSelectElement).value)">
-                <option v-for="bt in BLOCK_TYPE_OPTIONS" :key="bt" :value="bt">{{ bt }}</option>
-              </select>
-            </div>
-            <div>
-              <label :class="labelClass" for="pp-desc-bl">Description</label>
-              <textarea id="pp-desc-bl" v-model="buf.description" :class="inputClass" rows="2" @input="scheduleCommit" @blur="flush" />
-            </div>
-            <div>
-              <label :class="labelClass" for="pp-constraints-bl">Contraintes (une par ligne)</label>
-              <textarea id="pp-constraints-bl" v-model="buf.constraints" :class="inputClass" rows="2" @input="scheduleCommit" @blur="flush" />
-            </div>
-          </template>
+          <!-- (Plus de branche « bloc » : un bloc sélectionné seul ouvre BlockConfigPanel, ancré à sa
+               carte. Ce panneau ne le voit donc plus qu'en sélection MULTIPLE, où seuls les champs
+               communs s'affichent. Le type de bloc a été retiré de la config à la demande — il reste
+               réglable par le menu contextuel de la carte.) -->
 
           <!-- ── Module (couche fonctionnelle) ── -->
           <template v-else-if="isModule(node)">
@@ -516,12 +502,12 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
               <label :class="labelClass" for="pp-code">Code</label>
               <input id="pp-code" v-model="buf.code" :class="inputClass" type="text" placeholder="DEV-04" @input="scheduleCommit" @blur="flush" />
             </div>
-            <div>
-              <label :class="labelClass" for="pp-perimeter">Périmètre</label>
-              <select id="pp-perimeter" v-model="buf.perimeter" :class="inputClass" @change="flush">
-                <option v-for="p in PERIMETER_OPTIONS" :key="p.id" :value="p.id">{{ p.label }}</option>
-              </select>
-            </div>
+            <FeatureFieldSelect
+              v-for="f in project.orderedFeatureFields"
+              :key="f.id"
+              :feature-id="node.id"
+              :field="f"
+            />
             <div>
               <label :class="labelClass" for="pp-estimate">Estimation</label>
               <input id="pp-estimate" v-model="buf.estimate" :class="inputClass" type="text" placeholder="1j · 4h · à estimer" @input="scheduleCommit" @blur="flush" />
@@ -565,7 +551,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
               />
               <div
                 v-if="serviceMenuOpen && (serviceMatches.length || canCreateService)"
-                class="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-black/[0.08] bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
+                class="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-black/8 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
                 role="listbox"
               >
                 <button
@@ -593,7 +579,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
             </div>
 
             <!-- Détails du service référencé (registre partagé) -->
-            <div v-if="currentService" class="space-y-2 rounded-md border border-black/[0.06] p-2 dark:border-white/10">
+            <div v-if="currentService" class="space-y-2 rounded-md border border-black/6 p-2 dark:border-white/10">
               <div>
                 <label :class="labelClass" for="pp-svc-url">URL de base</label>
                 <input id="pp-svc-url" v-model="svcBuf.baseUrl" :class="inputClass" type="text" placeholder="https://api.exemple.com" @blur="commitSvc" />
@@ -615,7 +601,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
             <div>
               <label :class="labelClass">Endpoint</label>
               <div class="flex items-center gap-1">
-                <select v-model="buf.method" :class="inputClass" class="!w-24" aria-label="Méthode" @change="flush">
+                <select v-model="buf.method" :class="inputClass" class="w-24!" aria-label="Méthode" @change="flush">
                   <option value="">—</option>
                   <option v-for="m in HTTP_METHODS" :key="m" :value="m">{{ m }}</option>
                 </select>
@@ -638,7 +624,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
                   v-for="(ep, i) in endpointSuggestions"
                   :key="i"
                   type="button"
-                  class="rounded border border-black/10 px-1.5 py-0.5 text-[10px] text-slate-600 hover:border-cyan-500 hover:text-cyan-700 dark:border-white/15 dark:text-zinc-300 dark:hover:text-cyan-300"
+                  class="rounded-sm border border-black/10 px-1.5 py-0.5 text-[10px] text-slate-600 hover:border-cyan-500 hover:text-cyan-700 dark:border-white/15 dark:text-zinc-300 dark:hover:text-cyan-300"
                   @click="pickEndpoint(ep.method, ep.path)"
                 >
                   {{ ep.method }} {{ ep.path }}
@@ -647,7 +633,7 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
               <button
                 v-if="currentService && buf.path.trim()"
                 type="button"
-                class="mt-1.5 rounded px-1.5 py-0.5 text-[11px] text-cyan-700 hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+                class="mt-1.5 rounded-sm px-1.5 py-0.5 text-[11px] text-cyan-700 hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
                 @click="addEndpointToService"
               >
                 + Ajouter cet endpoint au service
@@ -655,20 +641,22 @@ const labelClass = 'mb-1 block text-[11px] font-medium text-slate-500 dark:text-
             </div>
           </template>
 
-          <!-- Notes (tous types) -->
-          <div>
+          <!-- Notes — sauf bloc (v8) et fonctionnalité (v4), dont le champ `notes` a fusionné dans
+               le document riche : `buildPatch` ne le renvoie pas pour eux, la zone avalerait donc la
+               saisie en silence. -->
+          <div v-if="!isBlock(node) && !isFeature(node)">
             <label :class="labelClass" for="pp-notes">Notes</label>
             <textarea id="pp-notes" v-model="buf.notes" :class="inputClass" rows="2" @input="scheduleCommit" @blur="flush" />
           </div>
 
           <!-- Pont inter-couches : fonctionnalités réalisées par cette page/ce bloc -->
-          <div v-if="isPage(node) || isBlock(node)" class="border-t border-black/[0.06] pt-3 dark:border-white/10">
+          <div v-if="isPage(node) || isBlock(node)" class="border-t border-black/6 pt-3 dark:border-white/10">
             <RealizationSection :node-id="node.id" direction="target" />
           </div>
         </template>
 
         <!-- ── Champs communs : lot (+ provenance) & facette (notes) ── -->
-        <div v-if="!isSite" class="space-y-3 border-t border-black/[0.06] pt-3 dark:border-white/10">
+        <div v-if="!isSite" class="space-y-3 border-t border-black/6 pt-3 dark:border-white/10">
           <div>
             <label :class="labelClass" for="pp-lot">Lot</label>
             <div class="flex items-center gap-2">

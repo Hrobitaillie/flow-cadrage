@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// Pastille PORTAIL : extrémité déplaçable d'une arête `render:'portal'` (evolution-v2.md §8).
-// Deux par arête portail (émises par useCanvasSync.portalNodesOf) ; chacune est reliée à SON
-// élément par un court connecteur (edge `portalTie`, rendu par ProximityConnector). Déplaçable
-// comme un nœud (position persistée au drop via setPortalPosition). Clic → focus l'autre bout ;
-// clic droit → popover d'arête (convertir en ligne / supprimer). Handles cachés = ancres du tie.
+// Pastille PORTAIL — depuis la v13, uniquement la variante COMPACTE de la couche FONCTIONNELLE
+// (funcPortalNodes : liens inter-modules en mode « portail »). La couche structurelle n'en rend
+// plus : toute navigation y est une courbe pointillée derrière les cartes. Clic → focus l'autre
+// bout ; clic droit → popover d'arête (type / supprimer).
 import { inject } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { useUiStore } from '@/stores/ui'
@@ -30,7 +29,7 @@ function onContextMenu(ev: MouseEvent): void {
     <div
       class="portal-pill"
       :class="{ 'portal-pill-compact': data.compact }"
-      :title="`${data.label} — clic pour y aller, clic droit pour convertir/supprimer`"
+      :title="`${data.label} — clic pour y aller, clic droit pour modifier/supprimer`"
       @click="onClick"
       @contextmenu="onContextMenu"
     >

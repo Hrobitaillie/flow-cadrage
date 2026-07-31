@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveSpecs } from '@/domain/derive/specs'
+import { deriveSpecs } from '@flooow/core/domain/derive/specs'
 import {
   createEmptyProject,
   createPage,
@@ -9,8 +9,8 @@ import {
   createService,
   createEdge,
   createFeature,
-} from '@/model/factory'
-import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@/model/types'
+} from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@flooow/core/model/types'
 
 function doc(
   nodes: FlooowNode[],
@@ -30,12 +30,12 @@ function doc(
 }
 
 // Deux pages (dash plus bas), un bloc dans home, notes variées, un service.
-const home = createPage({ id: 'home', position: { x: 0, y: 0 }, attrs: { route: '/', description: 'accueil' } })
+const home = createPage({ id: 'home', position: { x: 0, y: 0 }, attrs: { slug: '', description: 'accueil' } })
 const dash = createPage({
   id: 'dash',
   position: { x: 0, y: 400 },
   lot: 2,
-  attrs: { route: '/d', description: 'tdb', constraints: ['admin'] },
+  attrs: { slug: 'd', description: 'tdb', constraints: ['admin'] },
 })
 const block = createBlock({ id: 'blk', parentId: 'home', position: { x: 0, y: 0 }, blockType: 'grid' })
 const bFront = createBehaviorNote({ id: 'bf', attachedTo: 'blk', position: { x: 0, y: 0 }, attrs: { facet: 'front' } })
@@ -79,7 +79,14 @@ describe('deriveSpecs — structure', () => {
     const s = deriveSpecs(full)
     const blk = s.pages[0]!.blocks[0]!
     expect(blk.apis).toEqual([
-      { noteId: 'api1', serviceId: 'svc', serviceName: 'Paiement', method: 'POST', path: '/pay' },
+      {
+        nodeId: 'api1',
+        fromNote: true,
+        serviceId: 'svc',
+        serviceName: 'Paiement',
+        method: 'POST',
+        path: '/pay',
+      },
     ])
   })
 

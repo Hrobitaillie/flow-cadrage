@@ -6,16 +6,16 @@ import {
   featuresRealizedBy,
   realizationEdge,
   realizersOf,
-} from '@/domain/realization'
-import { checkInvariants } from '@/domain/invariants'
+} from '@flooow/core/domain/realization'
+import { checkInvariants } from '@flooow/core/domain/invariants'
 import {
   createEmptyProject,
   createPage,
   createBlock,
   createFeature,
   createEdge,
-} from '@/model/factory'
-import type { FlooowEdge, FlooowNode, NodeIndex, ProjectDoc } from '@/model/types'
+} from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, NodeIndex, ProjectDoc } from '@flooow/core/model/types'
 import { useProjectStore } from '@/stores/project'
 
 function index(nodes: FlooowNode[]): NodeIndex {

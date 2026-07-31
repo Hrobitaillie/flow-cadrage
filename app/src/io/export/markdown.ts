@@ -4,13 +4,14 @@
 // Sécurité (securite.md §1) : tout texte UTILISATEUR est échappé là où un caractère de contrôle
 // Markdown casserait la structure — titres (#, retours ligne) et cellules de tableau (|, retours
 // ligne). Les ids sont slugifiés par factory.ts, jamais de texte brut dans une syntaxe active.
-import type { ProjectDoc } from '@/model/types'
-import { deriveSpecs, type SpecsApiNote, type SpecsFeatureRef } from '@/domain/derive/specs'
-import { deriveApi } from '@/domain/derive/api'
-import { deriveCatalog, type CatalogFeature, type CatalogFeatureRef } from '@/domain/derive/catalog'
-import { deriveEstimate, HOURS_PER_DAY, type EstimateTotal } from '@/domain/derive/estimate'
-import { docToMarkdown } from '@/model/richContent'
-import type { BehaviorNote } from '@/model/types'
+import type { ProjectDoc } from '@flooow/core/model/types'
+import { deriveSpecs, type SpecsApiNote, type SpecsFeatureRef } from '@flooow/core/domain/derive/specs'
+import { deriveApi } from '@flooow/core/domain/derive/api'
+import { deriveCatalog, type CatalogFeature, type CatalogFeatureRef } from '@flooow/core/domain/derive/catalog'
+import { deriveEstimate, HOURS_PER_DAY, type EstimateTotal } from '@flooow/core/domain/derive/estimate'
+import { docToMarkdown } from '@flooow/core/model/richContent'
+import { fullRouteOf } from '@flooow/core/domain/routes'
+import type { BehaviorNote } from '@flooow/core/model/types'
 
 // ── Échappement ────────────────────────────────────────────────────────────────
 /** Neutralise les caractères de contrôle Markdown dans un texte inline utilisateur. */
@@ -60,6 +61,18 @@ function appendFeatures(lines: string[], features: SpecsFeatureRef[]): void {
   if (!features.length) return
   const labels = features.map((f) => (f.code ? `${esc(f.code)} ${esc(f.name)}` : esc(f.name)))
   lines.push(`- Réalise : ${labels.join(', ')}`)
+}
+
+/** Slug de nom de fichier d'export dérivé du nom du projet (« Mon projet » → mon-projet). */
+export function projectSlug(doc: ProjectDoc): string {
+  return (
+    doc.meta.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'projet'
+  )
 }
 
 // ── Cahier des spécifications ─────────────────────────────────────────────────────
@@ -113,11 +126,10 @@ export function exportSpecsMarkdown(doc: ProjectDoc): string {
   }
 
   // Fiches par page (roll-up : page → blocs → notes).
+  const index = new Map(doc.nodes.map((n) => [n.id, n]))
   for (const page of specs.pages) {
-    const route = page.page.attrs.route
-    lines.push(
-      `## ${esc(page.page.attrs.name) || 'Page sans nom'}${route ? `  (${esc(route)})` : ''}`,
-    )
+    const route = fullRouteOf(page.page.id, index)
+    lines.push(`## ${esc(page.page.attrs.name) || 'Page sans nom'}  (${esc(route)})`)
     const roles = page.page.attrs.roles
     if (roles && roles.length > 0) lines.push(`Accès : ${roles.map(esc).join(', ')}`)
     lines.push('')
@@ -135,12 +147,14 @@ export function exportSpecsMarkdown(doc: ProjectDoc): string {
         `### Bloc — ${esc(block.block.attrs.name) || 'sans nom'} _(${esc(block.blockType)})_`,
       )
       lines.push('')
-      if (block.block.attrs.description) {
-        lines.push(escBlock(block.block.attrs.description))
+      // v8 : le contenu du bloc est un document riche — les contraintes et les notes y vivent
+      // désormais comme sections, il n'y a plus de `appendConstraints` à faire ici.
+      const contenu = docToMarkdown(block.block.attrs.content)
+      if (contenu) {
+        lines.push(contenu)
         lines.push('')
       }
       appendFeatures(lines, block.features)
-      appendConstraints(lines, block.constraints)
       appendBehaviors(lines, block.behaviors)
       appendApis(lines, block.apis)
       lines.push('')
@@ -197,12 +211,6 @@ function appendApis(lines: string[], apis: SpecsApiNote[]): void {
 }
 
 // ── Catalogue des fonctionnalités (« cadrage fusionné ») ──────────────────────────
-const PERIMETER_LABELS: Record<string, string> = {
-  site: 'Site',
-  editor: 'Éditeur',
-  internal: 'Interne',
-  external: 'Externe',
-}
 
 /** Libellé d'une référence de fonctionnalité (code + nom) pour une cellule / puce. */
 function featureLabel(r: CatalogFeatureRef): string {
@@ -217,7 +225,7 @@ function daysRange(t: EstimateTotal): string {
 
 /**
  * Catalogue des fonctionnalités en Markdown, façon locasyst : par module, une table récapitulative
- * (ID · Fonctionnalité · Lot · Périmètre · Dépend de · Est.) suivie d'une fiche détaillée par
+ * (ID · Fonctionnalité · Lot · un champ de projet par colonne · Dépend de · Est.) suivie d'une fiche détaillée par
  * fonctionnalité (Quoi · Implique · Dépend de · Débloque · Réalisé par · Endpoints · À confirmer).
  */
 export function exportCatalogMarkdown(doc: ProjectDoc): string {
@@ -264,14 +272,16 @@ export function exportCatalogMarkdown(doc: ProjectDoc): string {
       lines.push('')
     }
 
-    // Table récapitulative du module.
-    lines.push('| ID | Fonctionnalité | Lot | Périmètre | Dépend de | Est. |')
-    lines.push('| --- | --- | --- | --- | --- | --- |')
+    // Table récapitulative du module. Une colonne par champ de projet (v7) : leur nombre et leur
+    // libellé viennent du document, d'où l'en-tête et le séparateur construits plutôt qu'écrits.
+    const fieldCols = catalog.fields.map((fl) => escCell(fl.label))
+    lines.push(`| ID | Fonctionnalité | Lot | ${fieldCols.join(' | ')} | Dépend de | Est. |`)
+    lines.push(`| ${Array(5 + fieldCols.length).fill('---').join(' | ')} |`)
     for (const f of group.features) {
       const deps = f.dependsOn.map((d) => escCell(d.code || d.name)).join(', ') || '—'
-      const per = f.perimeter ? PERIMETER_LABELS[f.perimeter] ?? f.perimeter : '—'
+      const vals = f.fields.map((fv) => escCell(fv.value ?? '—'))
       lines.push(
-        `| ${escCell(f.code) || '—'} | ${escCell(f.name)} | L${f.lot} | ${per} | ${deps} | ${escCell(f.estimate) || '—'} |`,
+        `| ${escCell(f.code) || '—'} | ${escCell(f.name)} | L${f.lot} | ${vals.join(' | ')} | ${deps} | ${escCell(f.estimate) || '—'} |`,
       )
     }
     lines.push('')
@@ -309,8 +319,10 @@ function appendCatalogCard(lines: string[], f: CatalogFeature): void {
       .join(', ')
     lines.push(`- **Endpoints** : ${eps}`)
   }
-  const per = f.perimeter ? PERIMETER_LABELS[f.perimeter] ?? f.perimeter : '—'
-  lines.push(`- **Lot** : L${f.lot} — **Périmètre** : ${per} — **Est.** : ${esc(f.estimate) || '—'}`)
+  const fieldParts = f.fields.map((fv) => `**${esc(fv.label)}** : ${esc(fv.value ?? '—')}`)
+  lines.push(
+    [`- **Lot** : L${f.lot}`, ...fieldParts, `**Est.** : ${esc(f.estimate) || '—'}`].join(' — '),
+  )
   lines.push('')
 }
 

@@ -10,12 +10,14 @@
 // Le handle FS Access du dernier fichier est mémorisé en IndexedDB (structured-clone), ce qui
 // permet de réécrire sans re-picker. Les permissions ne sont (re)demandées que sur geste
 // utilisateur (queryPermission/requestPermission déclenchés depuis un clic / ⌘S).
-import type { ProjectDoc } from '@/model/types'
-import { parseProjectDoc } from '@/model/schema'
-import { migrate } from '@/model/migrations'
-import { checkInvariants } from '@/domain/invariants'
+import type { ProjectDoc } from '@flooow/core/model/types'
+import { parseProjectDoc } from '@flooow/core/model/schema'
+import { migrate } from '@flooow/core/model/migrations'
+import { checkInvariants } from '@flooow/core/domain/invariants'
 
-export const FILE_EXTENSION = '.flooow.json'
+// Extension neutre vis-à-vis du nom de l'app (16 juil. 2026) ; les anciens
+// `.flooow.json` restent ouvrables (accept inclut `.json` générique).
+export const FILE_EXTENSION = '.graph.json'
 /** Refus avant même le parse (securite.md §2.1). */
 export const MAX_FILE_BYTES = 20 * 1024 * 1024
 

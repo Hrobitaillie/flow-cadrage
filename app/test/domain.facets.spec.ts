@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { nodeFacet, matchesFacet } from '@/domain/facets'
-import { createPage, createBlock, createBehaviorNote, createApiNote } from '@/model/factory'
+import { nodeFacet, matchesFacet } from '@flooow/core/domain/facets'
+import { createPage, createBlock, createBehaviorNote, createApiNote } from '@flooow/core/model/factory'
 
 describe('facets — nodeFacet', () => {
   it('note comportement → sa facette', () => {

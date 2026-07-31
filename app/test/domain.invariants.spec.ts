@@ -1,16 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { checkInvariants, assertInvariants, endpointId } from '@/domain/invariants'
-import type { ViolationCode } from '@/domain/invariants'
+import { checkInvariants, assertInvariants, endpointId } from '@flooow/core/domain/invariants'
+import type { ViolationCode } from '@flooow/core/domain/invariants'
 import {
   createEmptyProject,
   createPage,
   createBlock,
   createBehaviorNote,
   createApiNote,
+  createFeature,
+  createModule,
   createService,
   createEdge,
-} from '@/model/factory'
-import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@/model/types'
+} from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@flooow/core/model/types'
 
 function doc(
   nodes: FlooowNode[],
@@ -32,7 +34,7 @@ describe('invariants — document sain', () => {
   })
 
   it('petit graphe valide : aucune violation', () => {
-    const page = createPage({ id: 'p', attrs: { route: '/', description: 'x' } })
+    const page = createPage({ id: 'p', attrs: { slug: '', description: 'x' } })
     const block = createBlock({ id: 'b', parentId: 'p', lot: 2 })
     const note = createBehaviorNote({ id: 'n', attachedTo: 'b', attrs: { hours: 3 } })
     const svc = createService({ id: 'svc' })
@@ -74,10 +76,21 @@ describe('invariants — chaque violation', () => {
     expect(codes(doc([a, b]))).toContain('PARENT_CYCLE')
   })
 
-  it('PAGE_PARENT : une page ne peut pas avoir de parent', () => {
+  it('PAGE_PARENT : une sous-page sous une PAGE est légitime (v12)', () => {
     const parent = createPage({ id: 'parent' })
-    const nested = { ...createPage({ id: 'nested' }), parentId: 'parent' }
-    expect(codes(doc([parent, nested]))).toContain('PAGE_PARENT')
+    const nested = createPage({ id: 'nested', parentId: 'parent' })
+    expect(codes(doc([parent, nested]))).not.toContain('PAGE_PARENT')
+  })
+
+  it('PAGE_PARENT : une page rattachée à autre chose qu’une page est refusée', () => {
+    const mod = createModule({ id: 'm' })
+    const nested = createPage({ id: 'nested', parentId: 'm' })
+    expect(codes(doc([mod, nested]))).toContain('PAGE_PARENT')
+  })
+
+  it('PAGE_PARENT : une page rattachée à un id inexistant est refusée', () => {
+    const nested = createPage({ id: 'nested', parentId: 'fantome' })
+    expect(codes(doc([nested]))).toContain('PAGE_PARENT')
   })
 
   it('BLOCK_PARENT : bloc sans parent page', () => {
@@ -146,8 +159,8 @@ describe('invariants — chaque violation', () => {
 })
 
 describe('invariants — mode de rendu portal (arête)', () => {
-  const src = createPage({ id: 'src', attrs: { route: '/s', description: 'd' } })
-  const dst = createPage({ id: 'dst', attrs: { route: '/d', description: 'd' } })
+  const src = createPage({ id: 'src', attrs: { slug: 's', description: 'd' } })
+  const dst = createPage({ id: 'dst', attrs: { slug: 'd', description: 'd' } })
 
   it('une arête navigatesTo en rendu portal reste saine (purement visuel)', () => {
     const e = createEdge({
@@ -158,6 +171,30 @@ describe('invariants — mode de rendu portal (arête)', () => {
       attrs: { render: 'portal' },
     })
     expect(checkInvariants(doc([src, dst], [e]))).toEqual([])
+  })
+})
+
+describe('invariants — DEPENDS_CYCLE', () => {
+  const dep = (id: string, source: string, target: string) =>
+    createEdge({ id, type: 'dependsOn', source, target })
+
+  it('détecte un cycle dependsOn (cartes bloquées à vie dans l’arbre de déblocage)', () => {
+    const a = createFeature({ id: 'a' })
+    const b = createFeature({ id: 'b' })
+    expect(codes(doc([a, b], [dep('e1', 'a', 'b'), dep('e2', 'b', 'a')]))).toContain('DEPENDS_CYCLE')
+  })
+
+  it('un diamant de dépendances n’est pas un cycle', () => {
+    const nodes = ['a', 'b', 'c', 'd'].map((id) => createFeature({ id }))
+    const edges = [dep('e1', 'a', 'b'), dep('e2', 'a', 'c'), dep('e3', 'b', 'd'), dep('e4', 'c', 'd')]
+    expect(codes(doc(nodes, edges))).not.toContain('DEPENDS_CYCLE')
+  })
+
+  it('une arête dependsOn fantôme relève de DANGLING_EDGE, pas du cycle', () => {
+    const a = createFeature({ id: 'a' })
+    const found = codes(doc([a], [dep('e1', 'a', 'fantome')]))
+    expect(found).toContain('DANGLING_EDGE')
+    expect(found).not.toContain('DEPENDS_CYCLE')
   })
 })
 

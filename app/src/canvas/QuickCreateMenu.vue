@@ -16,8 +16,6 @@ const ui = useUiStore()
 const STRUCTURAL_ITEMS: { kind: QuickCreateKind; label: string; glyph: string }[] = [
   { kind: 'page', label: 'Page (naviguer vers)', glyph: '▭' },
   { kind: 'block', label: 'Bloc', glyph: '▤' },
-  { kind: 'behavior', label: 'Note comportement', glyph: '⚙' },
-  { kind: 'api', label: 'Note API', glyph: '🔌' },
 ]
 const FUNCTIONAL_ITEMS: { kind: QuickCreateKind; label: string; glyph: string }[] = [
   { kind: 'feature', label: 'Fonctionnalité (dépend de)', glyph: '◈' },

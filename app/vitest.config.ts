@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
+      '@flooow/core': fileURLToPath(new URL('../packages/core/src', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
@@ -15,7 +16,7 @@ export default defineConfig({
     include: ['test/**/*.{test,spec}.ts', 'src/**/*.{test,spec}.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/domain/**', 'src/model/**'],
+      include: ['../packages/core/src/domain/**', '../packages/core/src/model/**'],
       reporter: ['text', 'html'],
     },
   },

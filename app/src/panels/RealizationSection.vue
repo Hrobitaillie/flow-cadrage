@@ -7,8 +7,8 @@
 import { ref, computed } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useProjectStore } from '@/stores/project'
-import { isApiNote, isBlock, isFeature, isPage } from '@/model/types'
-import type { FlooowNode } from '@/model/types'
+import { isApiNote, isBlock, isFeature, isPage } from '@flooow/core/model/types'
+import type { FlooowNode } from '@flooow/core/model/types'
 
 const props = defineProps<{ nodeId: string; direction: 'feature' | 'target' }>()
 
@@ -36,7 +36,7 @@ function subLabel(n: FlooowNode): string {
     const page = n.parentId ? project.nodeById(n.parentId) : undefined
     return page ? nodeName(page) : ''
   }
-  if (isPage(n)) return n.attrs.route ?? ''
+  if (isPage(n)) return project.routeOf(n.id)
   return ''
 }
 
@@ -130,13 +130,13 @@ function reveal(n: FlooowNode): void {
         type="text"
         autocomplete="off"
         :placeholder="addLabel"
-        class="w-full rounded-md border border-black/10 bg-white/70 px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:border-white/15 dark:bg-zinc-800/70 dark:text-zinc-100"
+        class="w-full rounded-md border border-black/10 bg-white/70 px-2 py-1.5 text-xs text-slate-800 outline-hidden transition focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:border-white/15 dark:bg-zinc-800/70 dark:text-zinc-100"
         @focus="menuOpen = true"
         @input="menuOpen = true"
       />
       <div
         v-if="menuOpen && candidates.length"
-        class="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-black/[0.08] bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
+        class="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-black/8 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
         role="listbox"
       >
         <button
@@ -147,7 +147,7 @@ function reveal(n: FlooowNode): void {
           class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-slate-700 hover:bg-black/5 dark:text-zinc-200 dark:hover:bg-white/10"
           @mousedown.prevent="link(n)"
         >
-          <span class="shrink-0 rounded bg-black/5 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-white/10 dark:text-zinc-400">{{ kindLabel(n) }}</span>
+          <span class="shrink-0 rounded-sm bg-black/5 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-white/10 dark:text-zinc-400">{{ kindLabel(n) }}</span>
           <span class="truncate">{{ nodeName(n) }}</span>
           <span v-if="subLabel(n)" class="ml-auto truncate text-[10px] text-slate-400">{{ subLabel(n) }}</span>
         </button>

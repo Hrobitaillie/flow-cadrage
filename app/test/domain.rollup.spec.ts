@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { descendants, children, attachedNotes, pageOf } from '@/domain/rollup'
-import { createPage, createBlock, createBehaviorNote, createApiNote } from '@/model/factory'
-import type { ChildrenIndex, FlooowNode, NodeIndex } from '@/model/types'
+import { descendants, children, attachedNotes, pageOf } from '@flooow/core/domain/rollup'
+import { createPage, createBlock, createBehaviorNote, createApiNote } from '@flooow/core/model/factory'
+import type { ChildrenIndex, FlooowNode, NodeIndex } from '@flooow/core/model/types'
 
 function indexes(nodes: FlooowNode[]): { index: NodeIndex; childrenIndex: ChildrenIndex } {
   const index: NodeIndex = new Map(nodes.map((n) => [n.id, n]))

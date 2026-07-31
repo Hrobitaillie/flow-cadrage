@@ -4,8 +4,8 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useProjectStore } from '@/stores/project'
-import { isApiNote, isBehaviorNote, isPage } from '@/model/types'
-import type { FlooowNode } from '@/model/types'
+import { isApiNote, isBehaviorNote, isPage } from '@flooow/core/model/types'
+import type { FlooowNode } from '@flooow/core/model/types'
 
 const ui = useUiStore()
 const project = useProjectStore()
@@ -27,7 +27,7 @@ function typeLabel(n: FlooowNode): string {
   return isBehaviorNote(n) ? 'Comportement' : 'API'
 }
 function subLabel(n: FlooowNode): string {
-  if (isPage(n)) return n.attrs.route ?? ''
+  if (isPage(n)) return project.routeOf(n.id)
   if (isApiNote(n)) {
     const svc = project.serviceById(n.attrs.serviceId)
     return svc?.name ?? ''
@@ -84,27 +84,27 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
   <div
     v-if="open"
-    class="pointer-events-auto fixed inset-0 z-[60] flex items-start justify-center bg-black/20 pt-[15vh]"
+    class="pointer-events-auto fixed inset-0 z-60 flex items-start justify-center bg-black/20 pt-[15vh]"
     @click.self="close"
   >
     <div
-      class="w-full max-w-lg overflow-hidden rounded-xl border border-black/[0.08] bg-white/95 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
+      class="w-full max-w-lg overflow-hidden rounded-xl border border-black/8 bg-white/95 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/95"
       role="dialog"
       aria-modal="true"
       aria-label="Recherche de nœud"
     >
-      <div class="flex items-center gap-2 border-b border-black/[0.06] px-3 dark:border-white/10">
+      <div class="flex items-center gap-2 border-b border-black/6 px-3 dark:border-white/10">
         <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="9" r="5" /><path d="M13 13l4 4" /></svg>
         <input
           ref="inputRef"
           v-model="query"
           type="text"
           placeholder="Rechercher une page, un bloc, une note…"
-          class="w-full bg-transparent py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-zinc-100"
+          class="w-full bg-transparent py-3 text-sm text-slate-800 outline-hidden placeholder:text-slate-400 dark:text-zinc-100"
           aria-label="Terme de recherche"
           @keydown="onKeydown"
         />
-        <kbd class="rounded border border-black/10 px-1.5 py-0.5 text-[10px] text-slate-400 dark:border-white/15">Échap</kbd>
+        <kbd class="rounded-sm border border-black/10 px-1.5 py-0.5 text-[10px] text-slate-400 dark:border-white/15">Échap</kbd>
       </div>
       <ul class="max-h-72 overflow-y-auto p-1" role="listbox">
         <li v-if="results.length === 0" class="px-3 py-6 text-center text-sm text-slate-400">Aucun résultat</li>
@@ -119,7 +119,7 @@ function onKeydown(event: KeyboardEvent): void {
           @mouseenter="activeIndex = i"
         >
           <span
-            class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium"
+            class="shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] font-medium"
             :class="i === activeIndex ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500 dark:bg-white/10 dark:text-zinc-400'"
           >{{ typeLabel(n) }}</span>
           <span class="truncate">{{ nodeName(n) }}</span>

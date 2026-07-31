@@ -1,28 +1,22 @@
 <script setup lang="ts">
 // Menu contextuel (clic droit, evolution-v2.md §3) : Supprimer (cascade + confirm géré en amont),
-// Définir page d'accueil (page), Changer le type (bloc → BlockType ; note → behavior/api).
+// Définir page d'accueil (page), Changer le type (bloc → BlockType).
 import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project'
-import { BLOCK_TYPES, isBlock, isNote, isPage, type BlockType, type NoteKind } from '@/model/types'
+import { BLOCK_TYPES, isBlock, isPage, type BlockType } from '@flooow/core/model/types'
 
 const props = defineProps<{ x: number; y: number; nodeId: string }>()
 const emit = defineEmits<{
   (e: 'delete'): void
   (e: 'set-home'): void
   (e: 'set-block-type', type: BlockType): void
-  (e: 'convert-note', kind: NoteKind): void
-  (e: 'add-behavior'): void
-  (e: 'add-api'): void
+  (e: 'comment'): void
   (e: 'close'): void
 }>()
 
 const store = useProjectStore()
 const node = computed(() => store.nodeById(props.nodeId))
-const isFrame = computed(() => {
-  const n = node.value
-  return !!n && (isPage(n) || isBlock(n))
-})
-const submenu = ref<'block' | 'note' | null>(null)
+const submenu = ref<'block' | null>(null)
 </script>
 
 <template>
@@ -58,33 +52,10 @@ const submenu = ref<'block' | 'note' | null>(null)
       </div>
     </div>
 
-    <!-- Changer le type de note -->
-    <div v-if="isNote(node)" class="relative">
-      <button class="row justify-between" @click="submenu = submenu === 'note' ? null : 'note'">
-        ✎ Changer le type <span class="text-slate-400">›</span>
-      </button>
-      <div
-        v-if="submenu === 'note'"
-        class="absolute left-full top-0 ml-1 min-w-[150px] rounded-md border border-slate-200 bg-white py-1 shadow-lg"
-      >
-        <button
-          class="row"
-          :class="{ 'font-semibold text-sky-600': node.kind === 'behavior' }"
-          @click="emit('convert-note', 'behavior')"
-        >Comportement</button>
-        <button
-          class="row"
-          :class="{ 'font-semibold text-sky-600': node.kind === 'api' }"
-          @click="emit('convert-note', 'api')"
-        >API</button>
-      </div>
-    </div>
-
-    <!-- Ajouter une note rattachée (page ou bloc) -->
-    <template v-if="isFrame">
+    <!-- Commenter (v13) : pages et blocs — les seules ancres permises par le modèle Comment. -->
+    <template v-if="isPage(node) || isBlock(node)">
       <div class="my-1 border-t border-slate-100"></div>
-      <button class="row" @click="emit('add-behavior')">⚙️ Ajouter un comportement</button>
-      <button class="row" @click="emit('add-api')">🔌 Ajouter une API</button>
+      <button class="row" @click="emit('comment')">💬 Commenter</button>
     </template>
 
     <div class="my-1 border-t border-slate-100"></div>

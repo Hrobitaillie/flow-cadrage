@@ -7,13 +7,14 @@ import { reactive, ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useProjectStore } from '@/stores/project'
 import { useFeatureEditor } from '@/composables/useFeatureEditor'
-import { isFeature } from '@/model/types'
-import type { FeatureNode, Perimeter } from '@/model/types'
-import { EMPTY_DOC, type RichDoc } from '@/model/richContent'
+import { isFeature } from '@flooow/core/model/types'
+import type { FeatureNode } from '@flooow/core/model/types'
+import { EMPTY_DOC, type RichDoc } from '@flooow/core/model/richContent'
 import { lotColor } from '@/theme/tokens'
 import SeamlessField from './SeamlessField.vue'
 import RealizationSection from './RealizationSection.vue'
 import RichEditor from './RichEditor.vue'
+import FeatureFieldSelect from './FeatureFieldSelect.vue'
 
 const ui = useUiStore()
 const project = useProjectStore()
@@ -26,13 +27,6 @@ const node = computed<FeatureNode | null>(() => {
   return n && isFeature(n) ? n : null
 })
 
-const PERIMETERS: { id: '' | Perimeter; label: string }[] = [
-  { id: '', label: 'Aucun' },
-  { id: 'site', label: 'Site' },
-  { id: 'editor', label: 'Éditeur' },
-  { id: 'internal', label: 'Interne' },
-  { id: 'external', label: 'Externe' },
-]
 const LOT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 const buf = reactive({ code: '', name: '', estimate: '' })
@@ -98,12 +92,7 @@ function flush(): void {
   commitContent(featureId.value)
 }
 
-// Contrôles à commit immédiat (périmètre, lot).
-function setPerimeter(p: '' | Perimeter): void {
-  const id = featureId.value
-  if (!id) return
-  project.updateAttrs(id, { perimeter: p === '' ? null : p })
-}
+// Contrôles à commit immédiat (lot ; les champs de projet commitent depuis FeatureFieldSelect).
 function setLot(value: string): void {
   const id = featureId.value
   if (!id) return
@@ -114,8 +103,6 @@ const lot = computed(() => (featureId.value ? project.lotOf(featureId.value) : 1
 const completeness = computed(() =>
   featureId.value ? project.completenessOf(featureId.value) : { missing: [], complete: true },
 )
-const currentPerimeter = computed<'' | Perimeter>(() => node.value?.attrs.perimeter ?? '')
-
 function close(): void {
   flush()
   ui.closeEditor()
@@ -152,7 +139,7 @@ onBeforeUnmount(() => flush())
     <!-- Barre supérieure : lot + code + fermeture -->
     <header class="flex items-center gap-2 px-6 pt-4">
       <select
-        class="lot-select rounded px-1.5 py-0.5 text-[11px] font-semibold text-white"
+        class="lot-select rounded-sm px-1.5 py-0.5 text-[11px] font-semibold text-white"
         :style="{ backgroundColor: lotColor(lot) }"
         :value="node.lot != null ? String(node.lot) : ''"
         title="Lot"
@@ -172,8 +159,8 @@ onBeforeUnmount(() => flush())
       </span>
       <button
         type="button"
-        class="ml-auto rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-        :class="{ '!ml-2': !completeness.complete }"
+        class="ml-auto rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+        :class="{ 'ml-2!': !completeness.complete }"
         aria-label="Fermer l'éditeur"
         title="Fermer"
         @click="close"
@@ -189,17 +176,14 @@ onBeforeUnmount(() => flush())
       <!-- Titre -->
       <SeamlessField v-model="buf.name" heading placeholder="Sans titre" @update:model-value="scheduleCommit" @commit="flush" />
 
-      <!-- Périmètre : pilules -->
-      <div class="mt-3 flex flex-wrap items-center gap-1.5">
-        <span class="mr-1 text-[11px] font-medium uppercase tracking-wide text-slate-400">Périmètre</span>
-        <button
-          v-for="p in PERIMETERS"
-          :key="p.id || 'none'"
-          type="button"
-          class="rounded-full px-2 py-0.5 text-[11px] transition-colors"
-          :class="currentPerimeter === p.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-          @click="setPerimeter(p.id)"
-        >{{ p.label }}</button>
+      <!-- Champs de projet (v7) : mêmes listes, mêmes libellés que sur la carte du canvas. -->
+      <div v-if="featureId" class="mt-3 flex flex-wrap items-start gap-4">
+        <FeatureFieldSelect
+          v-for="f in project.orderedFeatureFields"
+          :key="f.id"
+          :feature-id="featureId"
+          :field="f"
+        />
       </div>
 
       <!-- Estimation -->

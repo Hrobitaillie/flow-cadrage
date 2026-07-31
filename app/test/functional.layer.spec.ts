@@ -3,17 +3,17 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useProjectStore } from '@/stores/project'
-import { parseProjectDoc, safeParseProjectDoc } from '@/model/schema'
-import { migrate } from '@/model/migrations'
-import { checkInvariants } from '@/domain/invariants'
-import type { ViolationCode } from '@/domain/invariants'
+import { parseProjectDoc, safeParseProjectDoc } from '@flooow/core/model/schema'
+import { migrate } from '@flooow/core/model/migrations'
+import { checkInvariants } from '@flooow/core/domain/invariants'
+import type { ViolationCode } from '@flooow/core/domain/invariants'
 import {
   createEmptyProject,
   createModule,
   createFeature,
   createPage,
   createEdge,
-} from '@/model/factory'
+} from '@flooow/core/model/factory'
 import {
   isModule,
   isFeature,
@@ -22,7 +22,7 @@ import {
   type FlooowEdge,
   type FlooowNode,
   type ProjectDoc,
-} from '@/model/types'
+} from '@flooow/core/model/types'
 
 function doc(nodes: FlooowNode[], edges: FlooowEdge[] = []): ProjectDoc {
   return { ...createEmptyProject(), nodes, edges }
@@ -48,7 +48,7 @@ describe('fabriques — module & fonctionnalité', () => {
     expect(f.attrs).toMatchObject({
       code: 'DEV-04',
       name: 'Formulaire devis',
-      perimeter: null,
+      fieldValues: {},
       estimate: '',
       content: { type: 'doc' },
     })
@@ -172,5 +172,66 @@ describe('store — CRUD couche fonctionnelle', () => {
     const b = p.addFeature(m)
     p.addEdge({ type: 'dependsOn', source: a, target: b })
     expect(p.violations).toEqual([])
+  })
+
+  it('arrangeFunctional pose les fonctionnalités en ARBRE : racines en haut, dépendantes dessous', () => {
+    const p = useProjectStore()
+    const m = p.addModule()
+    // a racine à contenu long (carte haute) ; b et c dépendent de a ; d dépend de b.
+    const long = 'x'.repeat(1200) // ~29 lignes affichées → carte bien plus haute que le pas natif
+    const a = p.addFeature(m, { name: 'A', position: { x: 0, y: 10 } })
+    const b = p.addFeature(m, { name: 'B', position: { x: 0, y: 20 } })
+    const c = p.addFeature(m, { name: 'C', position: { x: 40, y: 0 } })
+    const d = p.addFeature(m, { name: 'D', position: { x: 0, y: 30 } })
+    p.addEdge({ type: 'dependsOn', source: b, target: a })
+    p.addEdge({ type: 'dependsOn', source: c, target: a })
+    p.addEdge({ type: 'dependsOn', source: d, target: b })
+    p.updateAttrs(a, {
+      content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: long }] }] },
+    })
+    p.arrangeFunctional()
+    const pos = (id: string) => p.nodeById(id)!.position
+    // Rangées : a (racine) en haut, b et c au même niveau dessous, d encore dessous.
+    expect(pos(a).y).toBe(0)
+    expect(pos(b).y).toBe(pos(c).y)
+    expect(pos(b).y).toBeGreaterThan(pos(a).y)
+    expect(pos(d).y).toBeGreaterThan(pos(b).y)
+    // La rangée de la carte longue (a) réserve plus que le pas natif avant la suivante.
+    expect(pos(b).y).toBeGreaterThan(300)
+    // Dans la rangée 1, l'ordre horizontal suit les clés x stockées (b: x0 < c: x40).
+    expect(pos(b).x).toBeLessThan(pos(c).x)
+  })
+
+  it('arrangeFunctional : une dépendance INTER-modules descend la carte sous les racines de son module', () => {
+    const p = useProjectStore()
+    const m1 = p.addModule({ position: { x: 0, y: 0 } })
+    const m2 = p.addModule({ position: { x: 500, y: 0 } })
+    const a1 = p.addFeature(m1, { name: 'A1' })
+    const b1 = p.addFeature(m2, { name: 'B1' })
+    const b2 = p.addFeature(m2, { name: 'B2' })
+    // b2 dépend d'une fonctionnalité d'un AUTRE module : elle n'est pas « sans dépendance ».
+    p.addEdge({ type: 'dependsOn', source: b2, target: a1 })
+    p.arrangeFunctional()
+    const pos = (id: string) => p.nodeById(id)!.position
+    expect(pos(b1).y).toBe(0)
+    expect(pos(b2).y).toBeGreaterThan(pos(b1).y)
+    // Le module de la dépendance, lui, garde sa racine en haut.
+    expect(pos(a1).y).toBe(0)
+  })
+
+  it('arrangeFunctional : les modules ne se chevauchent jamais, même à clés superposées', () => {
+    const p = useProjectStore()
+    // Trois modules volontairement créés au même endroit.
+    const m1 = p.addModule({ position: { x: 0, y: 0 } })
+    const m2 = p.addModule({ position: { x: 0, y: 0 } })
+    const m3 = p.addModule({ position: { x: 0, y: 0 } })
+    for (const m of [m1, m2, m3]) p.addFeature(m)
+    p.arrangeFunctional()
+    const xs = [m1, m2, m3].map((id) => p.nodeById(id)!.position.x).sort((a, b) => a - b)
+    const ys = [m1, m2, m3].map((id) => p.nodeById(id)!.position.y)
+    // Une seule rangée (y identiques), espacement d'au moins la largeur d'un module + écart.
+    expect(new Set(ys).size).toBe(1)
+    expect(xs[1]! - xs[0]!).toBeGreaterThanOrEqual(300 + 40)
+    expect(xs[2]! - xs[1]!).toBeGreaterThanOrEqual(300 + 40)
   })
 })

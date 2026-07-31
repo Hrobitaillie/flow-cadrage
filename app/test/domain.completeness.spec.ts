@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { completeness, countIncomplete, REQUIRED_FIELDS } from '@/domain/completeness'
+import { completeness, countIncomplete, REQUIRED_FIELDS } from '@flooow/core/domain/completeness'
 import {
   createPage,
   createBlock,
   createBehaviorNote,
   createApiNote,
-} from '@/model/factory'
+} from '@flooow/core/model/factory'
 
 describe('completeness — REQUIRED_FIELDS', () => {
   it('table conforme à la spec v2', () => {
-    expect(REQUIRED_FIELDS.page).toEqual(['name', 'route', 'description'])
+    expect(REQUIRED_FIELDS.page).toEqual(['name', 'slug', 'description'])
     expect(REQUIRED_FIELDS.block).toEqual(['name', 'blockType'])
     expect(REQUIRED_FIELDS.behavior).toEqual(['name', 'trigger'])
     expect(REQUIRED_FIELDS.api).toEqual(['serviceId', 'method', 'path'])
@@ -18,15 +18,30 @@ describe('completeness — REQUIRED_FIELDS', () => {
 
 describe('completeness — par type', () => {
   it('page complète', () => {
-    const page = createPage({ name: 'Accueil', attrs: { route: '/', description: 'la home' } })
+    const page = createPage({ name: 'Accueil', attrs: { slug: '', description: 'la home' } })
     expect(completeness(page)).toEqual({ missing: [], complete: true })
   })
 
-  it('page incomplète : route et description vides', () => {
-    const page = createPage({ name: 'Accueil' }) // route '' + description ''
+  it('page racine incomplète : seule la description manque (slug vide = accueil)', () => {
+    const page = createPage({ name: 'Accueil' }) // slug dérivé du nom, description ''
     const c = completeness(page)
     expect(c.complete).toBe(false)
-    expect(c.missing.sort()).toEqual(['description', 'route'])
+    expect(c.missing).toEqual(['description'])
+  })
+
+  it('page racine : un slug vide ne manque pas — c’est l’accueil de son arbre', () => {
+    const page = createPage({ name: 'Accueil', slug: '', attrs: { description: 'la home' } })
+    expect(completeness(page)).toEqual({ missing: [], complete: true })
+  })
+
+  it('sous-page : un slug vide MANQUE — deux sœurs sans segment collisionneraient', () => {
+    const page = createPage({
+      name: 'Fiche',
+      parentId: 'parent',
+      slug: '',
+      attrs: { description: 'le détail' },
+    })
+    expect(completeness(page).missing).toEqual(['slug'])
   })
 
   it('bloc : name + blockType (blockType par défaut free → complet si nommé)', () => {
@@ -54,7 +69,7 @@ describe('completeness — par type', () => {
   })
 
   it('champ blanc (espaces uniquement) compte comme manquant', () => {
-    const page = createPage({ attrs: { route: '/', description: '   ' } })
+    const page = createPage({ attrs: { slug: '', description: '   ' } })
     expect(completeness(page).missing).toEqual(['description'])
   })
 })

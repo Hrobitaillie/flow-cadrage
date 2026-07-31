@@ -5,15 +5,29 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
-import { createEmptyProject, createModule, createFeature, createEdge } from '../src/model/factory'
-import { mergeFeatureFields } from '../src/model/richContent'
-import { parseProjectDoc } from '../src/model/schema'
-import type { FlooowEdge, FlooowNode, Perimeter, ProjectDoc } from '../src/model/types'
+import { createEmptyProject, createModule, createFeature, createEdge } from '@flooow/core/model/factory'
+import { mergeFeatureFields } from '@flooow/core/model/richContent'
+import { parseProjectDoc } from '@flooow/core/model/schema'
+import { FIELD_PERIMETER } from '@flooow/core/model/types'
+import type { FeatureOption, FlooowEdge, FlooowNode, ProjectDoc } from '@flooow/core/model/types'
+
+/**
+ * Périmètres du catalogue locasyst. Enum FIGÉ dans le modèle jusqu'en v6, il n'est plus qu'une
+ * donnée SOURCE de ce générateur : le document produit porte des options de projet (v7), que l'on
+ * amorce ci-dessous à partir des seules valeurs réellement employées par le catalogue.
+ */
+type RawPerimeter = 'site' | 'editor' | 'internal' | 'external'
+const PERIMETER_LABELS: Record<RawPerimeter, string> = {
+  site: 'Site',
+  editor: 'Éditeur',
+  internal: 'Interne',
+  external: 'Externe',
+}
 
 interface RawFeature {
   code: string
   name: string
-  perimeter: Perimeter | null
+  perimeter: RawPerimeter | null
   dependsOn: string[]
   quoi: string
   toConfirm: string
@@ -160,10 +174,21 @@ const RAW: RawModule[] = [
 
 // Géométrie : un module par colonne (conteneur), ses fonctionnalités empilées EN RELATIF dedans.
 const COL_STEP = 360 // largeur module (300) + gouttière (60)
+// Pas vertical : au-dessus du plancher d'une carte (FEATURE_STEP = 236 en v7, cartes plus hautes
+// depuis les sélecteurs libellés) — les fiches locasyst ont un contenu long, donc on reste large.
+const ROW_STEP = 260
 
 const nodes: FlooowNode[] = []
 const edges: FlooowEdge[] = []
 const idByCode = new Map<string, string>()
+
+// Une option de périmètre par valeur RÉELLEMENT utilisée par le catalogue (ordre des libellés).
+const usedPerimeters = new Set(
+  RAW.flatMap((m) => m.features.map((f) => f.perimeter)).filter((p): p is RawPerimeter => p != null),
+)
+const perimeterOptions: FeatureOption[] = (Object.keys(PERIMETER_LABELS) as RawPerimeter[])
+  .filter((p) => usedPerimeters.has(p))
+  .map((p) => ({ id: `opt-perimeter-${p}`, fieldId: FIELD_PERIMETER, name: PERIMETER_LABELS[p] }))
 
 RAW.forEach((mod, i) => {
   const x = i * COL_STEP
@@ -180,12 +205,12 @@ RAW.forEach((mod, i) => {
       name: f.name,
       // Position RELATIVE au module (empilement) : le canvas ajoute l'inset + l'en-tête.
       // Positionnement libre : espacement vertical généreux (les cartes hautes ne se chevauchent pas).
-      position: { x: 0, y: k * 210 },
+      position: { x: 0, y: k * ROW_STEP },
       attrs: {
         code: f.code,
         name: f.name,
         content: mergeFeatureFields({ description: f.quoi, toConfirm: f.toConfirm }),
-        perimeter: f.perimeter,
+        fieldValues: { [FIELD_PERIMETER]: f.perimeter ? `opt-perimeter-${f.perimeter}` : null },
         estimate: '',
       },
     })
@@ -219,6 +244,10 @@ const doc: ProjectDoc = {
       notes: '',
     },
   },
+  // `featureFields` vient de createEmptyProject (les deux champs amorcés) ; seules les options
+  // sont propres au catalogue. « Branchement sur le site » reste sans option : la donnée n'existe
+  // pas dans la source locasyst.
+  featureOptions: perimeterOptions,
   nodes,
   edges,
 }

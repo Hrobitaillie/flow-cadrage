@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { spatialOrder, verticalOrder, ROW_TOLERANCE } from '@/domain/ordering'
-import { createPage, createBlock } from '@/model/factory'
-import type { PageNode } from '@/model/types'
+import { spatialOrder, verticalOrder, ROW_TOLERANCE } from '@flooow/core/domain/ordering'
+import { createPage, createBlock } from '@flooow/core/model/factory'
+import type { PageNode } from '@flooow/core/model/types'
 
 function frame(id: string, x: number, y: number): PageNode {
   return createPage({ id, position: { x, y } })

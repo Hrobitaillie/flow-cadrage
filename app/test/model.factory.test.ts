@@ -6,9 +6,10 @@ import {
   createBlock,
   createBehaviorNote,
   createApiNote,
+  createFeature,
   createService,
   createEdge,
-} from '@/model/factory'
+} from '@flooow/core/model/factory'
 
 describe('slugify', () => {
   it('produit un slug [a-z0-9-]', () => {
@@ -62,6 +63,15 @@ describe('factories', () => {
     expect(n.attachedTo).toBe('block-x')
     expect(n.parentId).toBeNull()
     expect(n.attrs.facet).toBeNull()
+  })
+
+  it('createFeature naît en statut idee avec une checklist vide (v10)', () => {
+    const f = createFeature({ name: 'Devis', code: 'DEV-04', parentId: 'mod-x' })
+    expect(f.type).toBe('feature')
+    expect(f.parentId).toBe('mod-x')
+    expect(f.attrs.code).toBe('DEV-04')
+    expect(f.attrs.status).toBe('idee')
+    expect(f.attrs.checklist).toEqual([])
   })
 
   it('createApiNote référence un service + endpoint', () => {

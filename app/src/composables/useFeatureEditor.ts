@@ -5,7 +5,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useProjectStore } from '@/stores/project'
-import { isFeature } from '@/model/types'
+import { isFeature } from '@flooow/core/model/types'
 
 export function useFeatureEditor(): {
   featureId: ComputedRef<string | null>

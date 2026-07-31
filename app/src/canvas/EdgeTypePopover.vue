@@ -1,18 +1,17 @@
 <script setup lang="ts">
 // Popover de changement de type d'arête (evolution-v2.md §3) : au clic sur une arête manuelle,
-// propose les types valides pour cette paire d'extrémités + suppression.
-import type { EdgeRender, EdgeType } from '@/model/types'
+// propose les types valides pour cette paire d'extrémités + suppression. (Plus d'option
+// « Convertir en ligne/portail » depuis la v13 : la couche structurelle ne rend plus de portails.)
+import type { EdgeType } from '@flooow/core/model/types'
 
-const props = defineProps<{
+defineProps<{
   x: number
   y: number
   current: EdgeType
   choices: EdgeType[]
-  render: EdgeRender
 }>()
 const emit = defineEmits<{
   (e: 'select', type: EdgeType): void
-  (e: 'toggle-render'): void
   (e: 'remove'): void
   (e: 'close'): void
 }>()
@@ -46,14 +45,6 @@ const LABELS: Record<EdgeType, string> = {
         :class="type === current ? 'bg-sky-500' : 'bg-slate-300'"
       />
       {{ LABELS[type] }}
-    </button>
-    <div class="my-1 border-t border-slate-100"></div>
-    <button
-      class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-sky-50"
-      @click="emit('toggle-render')"
-    >
-      <span>{{ props.render === 'portal' ? '↔' : '⤿' }}</span>
-      {{ props.render === 'portal' ? 'Convertir en ligne' : 'Convertir en portail' }}
     </button>
     <div class="my-1 border-t border-slate-100"></div>
     <button

@@ -9,19 +9,18 @@ import { useUiStore } from '@/stores/ui'
 import { useProjectStore } from '@/stores/project'
 import { useHistoryStore } from '@/stores/history'
 import { useFileActions } from '@/composables/useFileActions'
-import { isBlock, isFrame, isNote, isPage } from '@/model/types'
-import type { CanvasLayer, FlooowNode, Position } from '@/model/types'
+import { isBlock, isPage } from '@flooow/core/model/types'
+import type { CanvasLayer, FlooowNode, Position } from '@flooow/core/model/types'
 
 // ── Outils de création v2 (partagé ToolDock ↔ clavier ↔ canvas) ────────────────
-// Modèle v2 : pages + blocs (frames), notes comportement/API (flottantes rattachées),
-// liens de navigation. Le service n'a PAS d'outil — il se crée depuis la note API.
+// Modèle v2 : pages + blocs (frames) + liens de navigation. Les outils de NOTE ont disparu avec la
+// refonte v13 (plan-refonte-notes-commentaires.md) — l'outil commentaire arrive avec CommentsPanel.
 
 export type ToolId =
   | 'select'
   | 'page'
   | 'block'
-  | 'behavior'
-  | 'api'
+  | 'comment'
   | 'link'
   | 'module'
   | 'feature'
@@ -39,8 +38,7 @@ export const TOOLS: ToolDef[] = [
   { id: 'select', label: 'Sélection', key: 'v', layer: 'both' },
   { id: 'page', label: 'Page', key: 'p', layer: 'structural' },
   { id: 'block', label: 'Bloc', key: 'b', layer: 'structural' },
-  { id: 'behavior', label: 'Note comportement', key: 'n', layer: 'structural' },
-  { id: 'api', label: 'Note API', key: 'a', layer: 'structural' },
+  { id: 'comment', label: 'Commentaire', key: 'c', layer: 'structural' },
   { id: 'module', label: 'Module', key: 'm', layer: 'functional' },
   { id: 'feature', label: 'Fonctionnalité', key: 'f', layer: 'functional' },
   { id: 'link', label: 'Lien', key: 'l', layer: 'both' },
@@ -78,43 +76,12 @@ function nextPosition(count: number): Position {
 
 /**
  * Remonte jusqu'à la page qui doit accueillir un bloc, à partir d'un nœud de contexte :
- * page → elle-même ; bloc → sa page (parentId) ; note → sa cible puis la page de la cible.
+ * page → elle-même ; bloc → sa page (parentId).
  */
-function pageContextFrom(project: ReturnType<typeof useProjectStore>, node: FlooowNode): string | null {
+function pageContextFrom(node: FlooowNode): string | null {
   if (isPage(node)) return node.id
   if (isBlock(node)) return node.parentId
-  if (isNote(node)) {
-    const target = project.nodeById(node.attachedTo)
-    return target ? pageContextFrom(project, target) : null
-  }
   return null
-}
-
-/**
- * Cible de rattachement (page ou bloc) pour une nouvelle note, à partir du contexte :
- * une frame se rattache elle-même ; une note partage la cible de la note sélectionnée.
- */
-function frameTargetFrom(node: FlooowNode): string | null {
-  if (isFrame(node)) return node.id
-  if (isNote(node)) return node.attachedTo
-  return null
-}
-
-/**
- * Position ABSOLUE proche d'une cible (les notes sont top-level : `parentId=null`, donc
- * positionnées en coordonnées monde). On décale à droite de la cible ; pour un bloc on
- * compose avec la position de sa page (le bloc est stocké en coords relatives à la page).
- */
-function absoluteNear(project: ReturnType<typeof useProjectStore>, targetId: string, fallback: number): Position {
-  const target = project.nodeById(targetId)
-  if (!target) return nextPosition(fallback)
-  if (isPage(target)) return { x: target.position.x + 360, y: target.position.y }
-  if (isBlock(target)) {
-    const page = target.parentId ? project.nodeById(target.parentId) : undefined
-    const base = page ? page.position : { x: 0, y: 0 }
-    return { x: base.x + target.position.x + 360, y: base.y + target.position.y }
-  }
-  return { x: target.position.x + 40, y: target.position.y + 40 }
 }
 
 /**
@@ -124,10 +91,6 @@ function absoluteNear(project: ReturnType<typeof useProjectStore>, targetId: str
  *
  * Rattachement à la sélection (evolution-v2.md §2) :
  *  - Bloc : rejoint la page du nœud sélectionné (le store empile en bas via `position.y`).
- *  - Note comportement / API : se rattache à la frame sélectionnée (ou à la cible de la note
- *    sélectionnée), sinon à la première page. Sans page disponible, l'outil est inopérant.
- *  - Note API : créée avec un service vide — l'utilisateur choisit/crée le service et l'endpoint
- *    dans le panneau de propriétés (autocomplétion depuis `doc.services`).
  */
 export function runTool(tool: ToolId, opts: { sticky?: boolean } = {}): void {
   const sticky = opts.sticky ?? false
@@ -135,8 +98,9 @@ export function runTool(tool: ToolId, opts: { sticky?: boolean } = {}): void {
   const ui = useUiStore()
 
   // Outils passifs : on ne fait qu'activer l'outil. `select`/`link` classiques ; `module`/`feature`
-  // sont des outils de PLACEMENT (on pose le nœud au clic sur le canvas, cf. useCanvasSync.onPaneClick).
-  if (tool === 'select' || tool === 'link' || tool === 'module' || tool === 'feature') {
+  // sont des outils de PLACEMENT (on pose le nœud au clic sur le canvas, cf. useCanvasSync.onPaneClick) ;
+  // `comment` (v13) vise un ÉLÉMENT : le fil se crée au clic sur une page/un bloc (onNodeClick).
+  if (tool === 'select' || tool === 'link' || tool === 'module' || tool === 'feature' || tool === 'comment') {
     toolState.active = tool
     toolState.sticky = tool === 'select' ? false : (opts.sticky ?? false)
     return
@@ -148,25 +112,8 @@ export function runTool(tool: ToolId, opts: { sticky?: boolean } = {}): void {
   if (tool === 'page') {
     id = project.addPage({ position: nextPosition(project.pages.length) })
   } else if (tool === 'block') {
-    const pageId = (sel && pageContextFrom(project, sel)) ?? project.pages[0]?.id ?? null
+    const pageId = (sel && pageContextFrom(sel)) ?? project.pages[0]?.id ?? null
     if (pageId) id = project.addBlock(pageId, 'free')
-  } else if (tool === 'behavior') {
-    const targetId = (sel && frameTargetFrom(sel)) ?? project.pages[0]?.id ?? null
-    if (targetId) {
-      id = project.addBehaviorNote(targetId, {
-        position: absoluteNear(project, targetId, project.behaviorNotes.length),
-      })
-    }
-  } else if (tool === 'api') {
-    const targetId = (sel && frameTargetFrom(sel)) ?? project.pages[0]?.id ?? null
-    if (targetId) {
-      id = project.addApiNote(
-        targetId,
-        '',
-        { method: '', path: '' },
-        { position: absoluteNear(project, targetId, project.apiNotes.length) },
-      )
-    }
   }
 
   if (id) ui.select(id)
@@ -274,10 +221,6 @@ export function useKeyboard(options: KeyboardOptions = {}): () => void {
       ui.setMode('api')
       return
     }
-    if (event.code === 'Digit4' || event.code === 'Numpad4') {
-      ui.setMode('catalog')
-      return
-    }
 
     // ── Suppression de la sélection ───────────────────────────────────────────
     if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -305,12 +248,9 @@ export function useKeyboard(options: KeyboardOptions = {}): () => void {
       return
     }
 
-    // ── Bascule minimap (⇧M) ──────────────────────────────────────────────────
-    if (event.shiftKey && event.key.toLowerCase() === 'm') {
-      event.preventDefault()
-      window.dispatchEvent(new CustomEvent('flooow:toggle-minimap'))
-      return
-    }
+    // (Plus de bascule minimap ⇧M : la <MiniMap> a été retirée du canvas, l'événement
+    // `flooow:toggle-minimap` n'avait donc plus aucun auditeur. Un raccourci qui ne fait rien est
+    // pire que pas de raccourci — et ⇧M restait pris pour l'outil « Module ».)
 
     // ── Outils (selon la couche active) ───────────────────────────────────────
     if (ui.mode === 'canvas' && !event.altKey) {

@@ -12,11 +12,10 @@ withDefaults(defineProps<{ title?: string; padded?: boolean }>(), { title: '', p
 
 <template>
   <section
-    class="floating-panel rounded-xl border border-black/[0.08] bg-white/85 text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.10)] backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/85 dark:text-zinc-100"
-  >
+    class="floating-panel  bg-primary-300 rounded-xl ">
     <header
       v-if="title"
-      class="border-b border-black/[0.06] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:text-zinc-400"
+      class="border-b border-black/6 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:text-zinc-400"
     >
       {{ title }}
     </header>

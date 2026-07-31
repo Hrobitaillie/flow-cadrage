@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useProjectStore } from '@/stores/project'
 import { useHistoryStore } from '@/stores/history'
-import { parseProjectDoc } from '@/model/schema'
+import { parseProjectDoc } from '@flooow/core/model/schema'
+import { FIELD_BINDING, FIELD_PERIMETER } from '@flooow/core/model/types'
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -81,6 +82,21 @@ describe('project store — mutations', () => {
     expect(p.nodeById(block)?.parentId).toBe(p2)
     expect(p.orderedBlocksOf(p2).map((b) => b.id)).toContain(block)
     expect(p.orderedBlocksOf(p1)).toHaveLength(0)
+  })
+
+  it("reparentBlock insère à l'index demandé (drag Octopus des blocs)", () => {
+    const p = useProjectStore()
+    const p1 = p.addPage({ name: 'P1' })
+    const p2 = p.addPage({ name: 'P2' })
+    const moved = p.addBlock(p1, 'grid')
+    const a = p.addBlock(p2, 'hero')
+    const b = p.addBlock(p2, 'cta')
+    p.reparentBlock(moved, p2, 1) // entre a et b
+    expect(p.orderedBlocksOf(p2).map((x) => x.id)).toEqual([a, moved, b])
+    // Index hors bornes : clampé en fin de pile, jamais d'écart dans les clés d'ordre.
+    const tail = p.addBlock(p1, 'free')
+    p.reparentBlock(tail, p2, 99)
+    expect(p.orderedBlocksOf(p2).map((x) => x.id)).toEqual([a, moved, b, tail])
   })
 
   it('setBlockType change le type de bloc', () => {
@@ -323,5 +339,101 @@ describe('project store — sérialisation', () => {
     p2.load(snapshot)
     expect(p2.nodes.size).toBe(2)
     expect(p2.services).toHaveLength(1)
+  })
+})
+
+describe('project store — champs de fonctionnalité (v7)', () => {
+  it('amorce les deux champs, sans aucune option', () => {
+    const p = useProjectStore()
+    expect(p.orderedFeatureFields.map((f) => f.id)).toEqual([FIELD_BINDING, FIELD_PERIMETER])
+    expect(p.featureOptions).toEqual([])
+  })
+
+  it('addFeatureOption normalise, ignore un nom vide et ne crée pas de doublon', () => {
+    const p = useProjectStore()
+    const a = p.addFeatureOption(FIELD_PERIMETER, '  Pilot’in  ')
+    expect(p.featureOptionById(a!)?.name).toBe('Pilot’in')
+
+    expect(p.addFeatureOption(FIELD_PERIMETER, '   ')).toBeNull()
+    // Même nom à la casse près → on retombe sur l'option existante, pas de seconde entrée.
+    expect(p.addFeatureOption(FIELD_PERIMETER, 'pilot’in')).toBe(a)
+    expect(p.optionsOfField(FIELD_PERIMETER)).toHaveLength(1)
+  })
+
+  it('cloisonne les options par champ', () => {
+    const p = useProjectStore()
+    p.addFeatureOption(FIELD_PERIMETER, 'Pilot’in')
+    p.addFeatureOption(FIELD_BINDING, 'Backoffice')
+    expect(p.optionsOfField(FIELD_PERIMETER).map((o) => o.name)).toEqual(['Pilot’in'])
+    expect(p.optionsOfField(FIELD_BINDING).map((o) => o.name)).toEqual(['Backoffice'])
+    // Un champ inexistant n'accepte rien.
+    expect(p.addFeatureOption('inconnu', 'X')).toBeNull()
+  })
+
+  it('setFeatureFieldValue n’écrase pas la valeur des AUTRES champs', () => {
+    const p = useProjectStore()
+    const f = p.addFeature(null, { name: 'F' })
+    const perim = p.addFeatureOption(FIELD_PERIMETER, 'Pilot’in')!
+    const bind = p.addFeatureOption(FIELD_BINDING, 'Backoffice')!
+    p.setFeatureFieldValue(f, FIELD_PERIMETER, perim)
+    p.setFeatureFieldValue(f, FIELD_BINDING, bind)
+    const node = p.nodeById(f)!
+    if (node.type !== 'feature') throw new Error('type inattendu')
+    expect(node.attrs.fieldValues).toEqual({ [FIELD_PERIMETER]: perim, [FIELD_BINDING]: bind })
+  })
+
+  it('refuse de supprimer une option encore utilisée, et l’autorise une fois libérée', () => {
+    const p = useProjectStore()
+    const f = p.addFeature(null, { name: 'F' })
+    const opt = p.addFeatureOption(FIELD_PERIMETER, 'Pilot’in')!
+    p.setFeatureFieldValue(f, FIELD_PERIMETER, opt)
+
+    expect(p.optionUsageCount(opt)).toBe(1)
+    expect(p.removeFeatureOption(opt)).toBe(false)
+    expect(p.featureOptionById(opt)).toBeTruthy()
+
+    p.setFeatureFieldValue(f, FIELD_PERIMETER, null)
+    expect(p.optionUsageCount(opt)).toBe(0)
+    expect(p.removeFeatureOption(opt)).toBe(true)
+    expect(p.featureOptionById(opt)).toBeUndefined()
+  })
+
+  it('renommer une option ne délie pas les fonctionnalités (référence par id)', () => {
+    const p = useProjectStore()
+    const f = p.addFeature(null, { name: 'F' })
+    const opt = p.addFeatureOption(FIELD_PERIMETER, 'Pilotin')!
+    p.setFeatureFieldValue(f, FIELD_PERIMETER, opt)
+    p.renameFeatureOption(opt, 'Pilot’in')
+    const node = p.nodeById(f)!
+    if (node.type !== 'feature') throw new Error('type inattendu')
+    expect(node.attrs.fieldValues[FIELD_PERIMETER]).toBe(opt)
+    expect(p.featureFieldLabel(node, FIELD_PERIMETER)).toBe('Pilot’in')
+  })
+
+  it('renameFeatureField change le libellé du sélecteur', () => {
+    const p = useProjectStore()
+    p.renameFeatureField(FIELD_PERIMETER, 'Réalisé par')
+    expect(p.featureFieldById(FIELD_PERIMETER)?.label).toBe('Réalisé par')
+  })
+
+  it('les champs et options survivent à un aller-retour de sérialisation', () => {
+    const p = useProjectStore()
+    const f = p.addFeature(null, { name: 'F' })
+    const opt = p.addFeatureOption(FIELD_PERIMETER, 'Pilot’in')!
+    p.setFeatureFieldValue(f, FIELD_PERIMETER, opt)
+    const doc = p.serialize()
+    expect(() => parseProjectDoc(doc)).not.toThrow()
+    expect(doc.featureOptions.map((o) => o.name)).toEqual(['Pilot’in'])
+  })
+
+  it('l’undo restaure les collections globales (elles passent par commit)', () => {
+    const p = useProjectStore()
+    const h = useHistoryStore()
+    p.addFeatureOption(FIELD_PERIMETER, 'Pilot’in')
+    expect(p.optionsOfField(FIELD_PERIMETER)).toHaveLength(1)
+    h.undo()
+    expect(p.optionsOfField(FIELD_PERIMETER)).toHaveLength(0)
+    h.redo()
+    expect(p.optionsOfField(FIELD_PERIMETER).map((o) => o.name)).toEqual(['Pilot’in'])
   })
 })

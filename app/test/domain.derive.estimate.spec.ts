@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveEstimate, parseEstimate, HOURS_PER_DAY } from '@/domain/derive/estimate'
+import { deriveEstimate, parseEstimate, HOURS_PER_DAY } from '@flooow/core/domain/derive/estimate'
 import {
   createEmptyProject,
   createPage,
@@ -8,8 +8,8 @@ import {
   createModule,
   createFeature,
   createEdge,
-} from '@/model/factory'
-import type { FlooowEdge, FlooowNode, ProjectDoc } from '@/model/types'
+} from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, ProjectDoc } from '@flooow/core/model/types'
 
 function doc(nodes: FlooowNode[], riskCoeff = 1.25, edges: FlooowEdge[] = []): ProjectDoc {
   const base = createEmptyProject()
@@ -101,9 +101,9 @@ describe('parseEstimate', () => {
 
 describe('deriveEstimate — couche fonctionnelle', () => {
   const mod = createModule({ id: 'm', name: 'Devis' })
-  const f1 = createFeature({ id: 'f1', parentId: 'm', lot: 1, attrs: { code: 'DEV-01', name: 'A', content: { type: 'doc', content: [] }, perimeter: null, estimate: '3j' } })
-  const f2 = createFeature({ id: 'f2', parentId: 'm', lot: 2, attrs: { code: 'DEV-02', name: 'B', content: { type: 'doc', content: [] }, perimeter: null, estimate: '1j' } })
-  const f3 = createFeature({ id: 'f3', parentId: 'm', attrs: { code: 'DEV-03', name: 'C', content: { type: 'doc', content: [] }, perimeter: null, estimate: '' } })
+  const f1 = createFeature({ id: 'f1', parentId: 'm', lot: 1, attrs: { code: 'DEV-01', name: 'A', content: { type: 'doc', content: [] }, estimate: '3j' } })
+  const f2 = createFeature({ id: 'f2', parentId: 'm', lot: 2, attrs: { code: 'DEV-02', name: 'B', content: { type: 'doc', content: [] }, estimate: '1j' } })
+  const f3 = createFeature({ id: 'f3', parentId: 'm', attrs: { code: 'DEV-03', name: 'C', content: { type: 'doc', content: [] }, estimate: '' } })
   const page = createPage({ id: 'p', name: 'Panier' })
   const realizes = createEdge({ type: 'realizedBy', source: 'f1', target: 'p' })
 

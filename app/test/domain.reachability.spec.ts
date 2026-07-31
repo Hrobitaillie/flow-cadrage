@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { reachablePages, orphanPages } from '@/domain/reachability'
-import { createEmptyProject, createPage, createEdge } from '@/model/factory'
-import type { FlooowEdge, FlooowNode, ProjectDoc } from '@/model/types'
+import { reachablePages, orphanPages } from '@flooow/core/domain/reachability'
+import { createEmptyProject, createPage, createEdge } from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, ProjectDoc } from '@flooow/core/model/types'
 
 function doc(nodes: FlooowNode[], edges: FlooowEdge[], homePageId: string | null): ProjectDoc {
   const base = createEmptyProject()

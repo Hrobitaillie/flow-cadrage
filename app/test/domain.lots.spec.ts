@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { resolveLot, resolveLotProvenance, DEFAULT_LOT } from '@/domain/lots'
-import { createPage, createBlock, createBehaviorNote } from '@/model/factory'
-import type { FlooowNode, NodeIndex } from '@/model/types'
+import { resolveLot, resolveLotProvenance, DEFAULT_LOT } from '@flooow/core/domain/lots'
+import { createPage, createBlock, createBehaviorNote } from '@flooow/core/model/factory'
+import type { FlooowNode, NodeIndex } from '@flooow/core/model/types'
 
 function index(nodes: FlooowNode[]): NodeIndex {
   return new Map(nodes.map((n) => [n.id, n]))

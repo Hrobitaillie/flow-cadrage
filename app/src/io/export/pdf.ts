@@ -5,7 +5,7 @@
 // La vue (SpecsView) porte la classe `specs-view` et des règles @media print (masquage des
 // panneaux via `.no-print`, sauts de page par section). On bascule en mode `specs` avant
 // d'imprimer pour que le contenu à imprimer soit bien à l'écran.
-import type { ProjectDoc } from '@/model/types'
+import type { ProjectDoc } from '@flooow/core/model/types'
 
 /**
  * Déclenche l'impression du cahier des specs. `beforetoggle` optionnel : hook appelé avant

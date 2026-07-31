@@ -10,7 +10,7 @@
 // fichiers (un autre onglet / une extension a pu altérer IndexedDB — securite.md §2). Un
 // snapshot invalide est ignoré (et purgé), jamais injecté dans le store.
 import { watch } from 'vue'
-import type { ProjectDoc } from '@/model/types'
+import type { ProjectDoc } from '@flooow/core/model/types'
 import { useProjectStore } from '@/stores/project'
 import { currentProjectKey, validateProjectDoc } from './file'
 

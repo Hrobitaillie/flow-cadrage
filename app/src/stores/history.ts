@@ -7,7 +7,7 @@
 // triviale ; un vrai diff par patches pourra remplacer le stockage sans changer cette API.
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { ProjectDoc } from '@/model/types'
+import type { ProjectDoc } from '@flooow/core/model/types'
 import { useProjectStore } from './project'
 
 export const HISTORY_CAP = 100

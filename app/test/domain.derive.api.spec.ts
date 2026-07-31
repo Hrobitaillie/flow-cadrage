@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveApi } from '@/domain/derive/api'
+import { deriveApi } from '@flooow/core/domain/derive/api'
 import {
   createEmptyProject,
   createPage,
@@ -8,8 +8,8 @@ import {
   createService,
   createFeature,
   createEdge,
-} from '@/model/factory'
-import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@/model/types'
+} from '@flooow/core/model/factory'
+import type { FlooowEdge, FlooowNode, ProjectDoc, Service } from '@flooow/core/model/types'
 
 function doc(nodes: FlooowNode[], services: Service[] = [], edges: FlooowEdge[] = []): ProjectDoc {
   return { ...createEmptyProject(), services, nodes, edges }

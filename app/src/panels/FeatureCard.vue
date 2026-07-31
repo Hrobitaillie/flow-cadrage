@@ -6,8 +6,8 @@
 // (feat-<id>) pour le scroll intra-document.
 import { ref, computed, watch } from 'vue'
 import { lotColor } from '@/theme/tokens'
-import type { CatalogFeature } from '@/domain/derive/catalog'
-import { isEmptyDoc } from '@/model/richContent'
+import type { CatalogFeature } from '@flooow/core/domain/derive/catalog'
+import { isEmptyDoc } from '@flooow/core/model/richContent'
 import RichContent from './RichContent.vue'
 
 const props = withDefaults(defineProps<{ feature: CatalogFeature; editable?: boolean }>(), {
@@ -19,15 +19,8 @@ defineEmits<{
   (e: 'update-estimate', id: string, value: string): void
 }>()
 
-const PERIMETER_LABELS: Record<string, string> = {
-  site: 'Site',
-  editor: 'Éditeur',
-  internal: 'Interne',
-  external: 'Externe',
-}
-const perimeterLabel = computed(() =>
-  props.feature.perimeter ? (PERIMETER_LABELS[props.feature.perimeter] ?? props.feature.perimeter) : null,
-)
+// Champs de projet renseignés (v7) : libellé et options viennent du document, plus du code.
+const setFields = computed(() => props.feature.fields.filter((f) => f.value != null))
 const anchorId = computed(() => `feat-${props.feature.id}`)
 const accent = computed(() => lotColor(props.feature.lot))
 
@@ -56,8 +49,13 @@ watch(
           class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
           :style="{ backgroundColor: accent }"
         >Lot {{ feature.lot }}</span>
-        <span v-if="perimeterLabel" class="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500">
-          {{ perimeterLabel }}
+        <span
+          v-for="f in setFields"
+          :key="f.fieldId"
+          class="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500"
+          :title="f.label"
+        >
+          {{ f.value }}
         </span>
         <span
           v-if="feature.orphan"
@@ -71,7 +69,7 @@ watch(
           <input
             v-if="editable"
             :value="estimateBuf"
-            class="w-24 rounded-md border border-transparent bg-slate-50 px-2 py-0.5 text-right font-mono2 text-xs text-slate-700 outline-none transition hover:border-slate-200 focus:border-emerald-400 focus:bg-white focus:ring-1 focus:ring-emerald-300"
+            class="w-24 rounded-md border border-transparent bg-slate-50 px-2 py-0.5 text-right font-mono2 text-xs text-slate-700 outline-hidden transition hover:border-slate-200 focus:border-emerald-400 focus:bg-white focus:ring-1 focus:ring-emerald-300"
             :class="{ 'text-amber-600': !estimateBuf.trim() }"
             placeholder="à estimer"
             aria-label="Estimation"

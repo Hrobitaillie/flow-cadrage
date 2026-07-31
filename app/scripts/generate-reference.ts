@@ -12,10 +12,10 @@ import {
   createEmptyProject,
   createPage,
   createService,
-} from '../src/model/factory'
-import { parseProjectDoc } from '../src/model/schema'
-import type { BlockType, Facet, FlooowEdge, FlooowNode, Risk, Service } from '../src/model/types'
-import { BLOCK_TYPES } from '../src/model/types'
+} from '@flooow/core/model/factory'
+import { parseProjectDoc } from '@flooow/core/model/schema'
+import type { BlockType, Facet, FlooowEdge, FlooowNode, Risk, Service } from '@flooow/core/model/types'
+import { BLOCK_TYPES } from '@flooow/core/model/types'
 
 const PAGES = 40
 const BLOCKS_PER_PAGE = 3 // → 120 blocs
@@ -83,7 +83,7 @@ for (let p = 0; p < PAGES; p++) {
     attrs: {
       name: `Page ${p + 1}`,
       description: `Description de la page ${p + 1}.`,
-      route: `/page-${p + 1}`,
+      slug: `page-${p + 1}`,
       roles: ['user'],
     },
   })
@@ -96,7 +96,18 @@ for (let p = 0; p < PAGES; p++) {
       parentId: page.id,
       blockType: pick(blockTypes),
       position: { x: 0, y: s * 120 },
-      attrs: { name: `Bloc ${p + 1}.${s + 1}`, description: `Bloc ${s + 1} de la page ${p + 1}.` },
+      attrs: {
+        name: `Bloc ${p + 1}.${s + 1}`,
+        content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: `Bloc ${s + 1} de la page ${p + 1}.` }],
+            },
+          ],
+        },
+      },
     })
     register(block)
     blockIds.push(block.id)

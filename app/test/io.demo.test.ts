@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { parseProjectDoc } from '@/model/schema'
-import { migrate } from '@/model/migrations'
-import { checkInvariants } from '@/domain/invariants'
-import { BLOCK_TYPES } from '@/model/types'
+import { parseProjectDoc } from '@flooow/core/model/schema'
+import { migrate } from '@flooow/core/model/migrations'
+import { checkInvariants } from '@flooow/core/domain/invariants'
+import { BLOCK_TYPES } from '@flooow/core/model/types'
 import demo from '../fixtures/demo-project.flooow.json'
 
 describe('fixture démo — Portail client B2B', () => {

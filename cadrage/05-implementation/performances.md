@@ -41,6 +41,27 @@ Le piège Vue classique : mettre 500 nœuds en `reactive` profond → chaque fra
 - Autosave : debounce 2 s après la dernière mutation, sérialisation via `structuredClone` puis `JSON.stringify` ; IndexedDB est asynchrone par nature. Si la sérialisation du projet de référence dépasse ~15 ms (à mesurer), la déplacer dans un Web Worker — ne pas le faire préventivement.
 - Jamais d'autosave pendant un drag (le store ne mute qu'au drop, donc garanti par construction).
 
+## À faire : culling des nœuds hors écran
+
+Constat mesuré (projet locasyst, 99 nœuds, viewport 1536×960) : `only-render-visible-elements` n'est pas positionné sur `<VueFlow>` et son défaut est `false`. **Tous les nœuds sont montés et stylés en permanence**, soit ~4 400 éléments DOM sous les nœuds.
+
+| zoom | nœuds à l'écran | hors écran |
+| --- | --- | --- |
+| 1 | 7 | **92** |
+| 0,6 | 11 | 88 |
+| 0,3 | 38 | 61 |
+| 0,117 | 99 | **0** |
+
+Le gain viserait le **zoom de travail** (~93 % des nœuds calculés pour rien à zoom 1), c'est-à-dire exactement le régime que le LOD ne couvre pas — les deux leviers sont complémentaires, pas redondants. Inutile en revanche au zoom LOD, où tout est déjà à l'écran.
+
+**Ce n'est pas un flag à basculer.** `onlyRenderVisibleElements` démonte les nœuds hors écran, or l'autolayout dépend des hauteurs RÉELLES mesurées : `measuredHeightSig()` (`useCanvasSync.ts`) lit le registre alimenté par le `ResizeObserver` de `FeatureNode`, et `functionalLayout` / `blockStackOf` empilent les cartes sur ces hauteurs cumulées. Une carte démontée cesse d'être mesurée et retombe sur l'estimation de `cardMetrics` — c'est l'écart estimé/réel à l'origine du bug « le layout ne se réadapte pas » (864 px estimés contre 749 px réels sur SOC-01). Symptôme attendu : sauts de position au scroll, la hauteur d'une carte dépendant de sa visibilité.
+
+Ordre à respecter le jour où on le fait :
+
+1. rendre le registre de hauteurs **persistant** (conserver la dernière hauteur mesurée d'une carte démontée au lieu de l'oublier) — `useCanvasSync.ts` ;
+2. activer `only-render-visible-elements` sur `<VueFlow>` ;
+3. garde-fou : vérification de neutralité de layout **en scroll** (mêmes positions/hauteurs avec et sans culling), sur le modèle de la vérification déjà utilisée au franchissement du seuil LOD.
+
 ## Divers
 
 - Icônes : sprite SVG local unique (pas de lib d'icônes composant-par-icône qui gonfle le bundle).

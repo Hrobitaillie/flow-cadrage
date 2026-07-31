@@ -5,7 +5,7 @@
 // choisi ; le parent décide du scroll intra-document / focus canvas.
 import { ref, computed } from 'vue'
 import { useProjectStore } from '@/stores/project'
-import { attentionGroups, type AttentionKind, type AttentionPoint } from '@/domain/attention'
+import { attentionGroups, type AttentionKind, type AttentionPoint } from '@flooow/core/domain/attention'
 
 defineEmits<{
   (e: 'navigate', point: AttentionPoint): void
@@ -34,7 +34,7 @@ const DOT: Record<AttentionKind, string> = {
       <button
         type="button"
         class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-        :class="tab === 'attention' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-white/60'"
+        :class="tab === 'attention' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:bg-white/60'"
         @click="tab = 'attention'"
       >
         Points d'attention
@@ -43,7 +43,7 @@ const DOT: Record<AttentionKind, string> = {
       <button
         type="button"
         class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-        :class="tab === 'comments' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-white/60'"
+        :class="tab === 'comments' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:bg-white/60'"
         @click="tab = 'comments'"
       >
         Commentaires
