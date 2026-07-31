@@ -18,7 +18,8 @@ import type {
   ProjectDoc,
   Risk,
 } from '@flooow/core/model/types'
-import { isBlock, isFeature, isModule, isPage } from '@flooow/core/model/types'
+import { FEATURE_STATUSES, isBlock, isFeature, isModule, isPage } from '@flooow/core/model/types'
+import type { FeatureStatus } from '@flooow/core/model/types'
 import {
   BLOCK_STEP,
   FEATURE_STEP,
@@ -62,7 +63,7 @@ export type AgentOp =
   | { op: 'create-page'; id?: string; name: string; parent?: string; slug?: string; roles?: string[]; description?: string; constraints?: string[]; logic?: string; notes?: string; lot?: number | null }
   | { op: 'create-block'; id?: string; page: string; name: string; blockType?: BlockType; content?: string; lot?: number | null }
   | { op: 'create-module'; id?: string; name: string; description?: string; notes?: string; lot?: number | null }
-  | { op: 'create-feature'; id?: string; module?: string; code?: string; name: string; estimate?: string; content?: string; lot?: number | null }
+  | { op: 'create-feature'; id?: string; module?: string; code?: string; name: string; estimate?: string; content?: string; lot?: number | null; status?: string }
   | { op: 'create-service'; id?: string; name: string; baseUrl?: string; auth?: string; risk?: Risk; notes?: string; endpoints?: { method: string; path: string; notes?: string }[] }
   // Compat v12 (notes disparues en v13) : `create-behavior` produit désormais un COMMENTAIRE tag
   // « Comportement » ; `create-api-note` une connexion inline (ou un commentaire tag « API » si la
@@ -107,7 +108,7 @@ const UPDATABLE: Record<string, Set<string>> = {
   page: new Set(['name', 'slug', 'roles', 'description', 'constraints', 'logic', 'notes', 'lot', 'parent']),
   block: new Set(['name', 'blockType', 'lot']),
   module: new Set(['name', 'description', 'notes', 'lot']),
-  feature: new Set(['name', 'code', 'estimate', 'lot']),
+  feature: new Set(['name', 'code', 'estimate', 'lot', 'status']),
   service: new Set(['name', 'baseUrl', 'auth', 'risk', 'notes', 'endpoints']),
 }
 
@@ -213,6 +214,12 @@ export function applyOps(input: ProjectDoc, ops: AgentOp[]): ApplyResult {
       report.push(`+ ${kind} « ${name} » (${shortId(id)})`)
     }
 
+    const requireStatus = (v: unknown): FeatureStatus => {
+      if (typeof v !== 'string' || !(FEATURE_STATUSES as readonly string[]).includes(v))
+        return fail(`statut invalide : « ${String(v)} » (valides : ${FEATURE_STATUSES.join(', ')}).`)
+      return v as FeatureStatus
+    }
+
     switch (op.op) {
       case 'create-page': {
         const name = requireName(op.name)
@@ -307,6 +314,8 @@ export function applyOps(input: ProjectDoc, ops: AgentOp[]): ApplyResult {
             content: markdownToDoc(op.content ?? ''),
             fieldValues: {},
             estimate: op.estimate ?? '',
+            // Statut initial explicite (cadrage d'un existant : « en-production » d'emblée).
+            ...(op.status !== undefined ? { status: requireStatus(op.status) } : {}),
           },
         })
         doc.nodes.push(feature)
@@ -497,7 +506,9 @@ export function applyOps(input: ProjectDoc, ops: AgentOp[]): ApplyResult {
           const kindKey = target.type === 'feature' ? 'feature' : (target as { kind: string }).kind
           applySet(kindKey, (key, value) => {
             if (key === 'lot') target.lot = value as number | null
-            else if (key === 'parent') {
+            else if (key === 'status') {
+              ;(target.attrs as { status: FeatureStatus }).status = requireStatus(value)
+            } else if (key === 'parent') {
               // Re-parentage de page (v12 : hiérarchie de pages = hiérarchie d'URL). null → racine.
               // Un cycle serait refusé par l'invariant PARENT_CYCLE à la validation finale du lot.
               if (value === null) target.parentId = null

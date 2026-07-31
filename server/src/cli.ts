@@ -80,7 +80,10 @@ Créations :
   {"op":"create-page","name":"Tarifs","slug":"tarifs","parent":"<poignée page>","description":"…","roles":["client"],"lot":2}
   {"op":"create-block","page":"<poignée>","name":"Grille","blockType":"grid","content":"markdown…"}
   {"op":"create-module","name":"Paiement"}
-  {"op":"create-feature","module":"<poignée>","code":"PAY-01","name":"Payer un devis","estimate":"2j","content":"markdown…"}
+  {"op":"create-feature","module":"<poignée>","code":"PAY-01","name":"Payer un devis","estimate":"2j","content":"markdown…","status":"en-production"}
+      → statut (cycle de vie) : idee · a-qualifier · cadree · estimee · retenue · reportee · ecartee ·
+        a-developper · en-developpement · en-recette · validee · en-production. Défaut : idee.
+        Cadrage d'un EXISTANT : poser directement le vrai statut. Modifiable via update {"set":{"status":"…"}}.
   {"op":"create-service","name":"CentralPay","baseUrl":"https://…","risk":"high","endpoints":[{"method":"POST","path":"/payments"}]}
   {"op":"add-api-ref","block":"<bloc>","service":"<poignée>","method":"GET","path":"/devis"}
       → LA façon de connecter un BLOC à une API (rendue dans la carte du bloc). remove-api-ref pour retirer.

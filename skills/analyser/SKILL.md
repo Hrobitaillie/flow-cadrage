@@ -46,7 +46,10 @@ commandes ssh en LECTURE SEULE : ls, cat, grep, head ; jamais d'écriture côté
    SEGMENT — page d'accueil = racine slug vide, `/offres/:uuid` = page `:uuid` sous
    `offres`) —, puis fonctionnalités avec
    `content` (fiche markdown COURTE : quoi / comment c'est fait aujourd'hui / points
-   d'attention), puis liens `realizedBy` et `dependsOn`, `add-api-ref` sur les blocs.
+   d'attention) ET leur `status` réel (`en-production` pour l'existant, `a-developper`/
+   `cadree` pour les manques constatés, `reportee` pour le documenté-mais-pas-fait),
+   puis liens `realizedBy` et `dependsOn` (le VRAI graphe de dépendances — une
+   fonctionnalité par ce qu'elle présuppose techniquement), `add-api-ref` sur les blocs.
 6. **Vérification** : `flooow summary` — traiter les « points d'attention » (fonctionnalités
    non réalisées, pages sans fonctionnalité, orphelins). Rendre à l'utilisateur le lien
    direct vers l'app affiché par `create`/la config.
