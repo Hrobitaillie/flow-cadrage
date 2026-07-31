@@ -1,5 +1,8 @@
 # Flooow
 
+> 📖 **Guide d'utilisation complet : [docs/UTILISATION.md](docs/UTILISATION.md)**
+> (installation, workflow humain/agent, CLI, skills, dépannage, aide-mémoire)
+
 Outil de cadrage visuel **agentique** pour projets web de solutions métier : un canvas de
 frames imbriquées (site → pages → blocs) et de nœuds typés (fonctionnalités, services/API,
 commentaires), d'où sont dérivées automatiquement les vues « Spécifications », « API » et
