@@ -5,3 +5,9 @@
 packages:
   - server
   - packages/*
+
+# esbuild (via tsx) est le seul build script approuvé : sans cette liste, pnpm 10
+# l'ignore à l'install (warning) puis ÉCHOUE à la vérification des deps au
+# premier `pnpm start` sur une machine neuve (ERR_PNPM_IGNORED_BUILDS).
+onlyBuiltDependencies:
+  - esbuild
