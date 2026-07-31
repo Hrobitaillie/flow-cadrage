@@ -16,7 +16,8 @@ import { findEntities } from '@flooow/core/agent/refs'
 import { AgentOpError, applyOps, type AgentOp } from '@flooow/core/agent/ops'
 import { createEmptyProject } from '@flooow/core/model/factory'
 import { promises as nodeFs } from 'node:fs'
-import { join as pathJoin, resolve as pathResolve } from 'node:path'
+import { dirname, join as pathJoin, resolve as pathResolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import {
   HttpError,
@@ -49,13 +50,16 @@ Lecture :
                                        référence copiée depuis l'app (bouton 🔗 d'un fil)
 
 Écriture :
-  flooow create <dossier/fichier> [nom du projet…] [--site <env>/<slug>]
+  flooow create <dossier/fichier> [nom du projet…] [--site <env>/<slug> | --repo <chemin>]
                                        crée un projet vierge (dossier créé au besoin) et rend
                                        le lien direct vers l'app. Avec --site : les données vivent
                                        dans le docs/ du site bao visé (JSON sous docs/.graph/,
                                        narratif markdown publié par Portulan), le dossier de l'app
                                        devient un lien symbolique. Site absent → le créer d'abord :
                                        bao site create <env>/<slug> --type static
+                                       Avec --repo <chemin> (usage local) : même rangement dans le
+                                       docs/ du dépôt donné — graphe versionné avec le dépôt hôte,
+                                       AGENTS.md posé pour les agents qui y travaillent
   flooow apply <dossier/fichier> [ops.json]
                                        applique un lot d'ops (JSON { "ops": [...] } lu depuis le
                                        fichier donné, ou stdin sans argument). Atomique : tout ou rien.
@@ -214,6 +218,9 @@ async function cmdApply(path: string, source: string | undefined): Promise<strin
 /** Crée un dossier (idempotent) + un projet vierge, et rend le lien direct vers l'app. */
 // ── Rangement chez le site (cadrage par projet, publié par Portulan) ──────────
 
+/** Racine du kit (ce dépôt), pour les invocations CLI rendues dans les AGENTS.md posés ailleurs. */
+const KIT_ROOT = pathResolve(dirname(fileURLToPath(import.meta.url)), '../..')
+
 const SITE_RE = /^(dev|preprod|tma)\/([a-z0-9][a-z0-9-]*)$/
 const ENV_URL_PREFIX: Record<string, string> = { dev: 'd', preprod: 'p', tma: 't' }
 /** Répertoires typés du narratif (méthode lannes) posés dans le docs/ du site. */
@@ -244,7 +251,41 @@ async function linkFolderToSite(folder: string, site: string, title: string, fil
       `Le site ${env}/${slug} n'existe pas (${sitePath}).\nLe créer d'abord (léger, sans BDD) : bao site create ${env}/${slug} --type static`,
     )
 
-  const docsDir = pathJoin(sitePath, 'docs')
+  await scaffoldDocsAndLink(folder, pathJoin(sitePath, 'docs'), title, file, '/srv/dev/flooow', true)
+  return `https://${slug}--docs.${ENV_URL_PREFIX[env!]}.pilot-in.net`
+}
+
+/**
+ * Variante locale de linkFolderToSite : range le cadrage dans le docs/ d'un DÉPÔT quelconque
+ * (hors infra bao/Portulan). Même mécanique : JSON sous docs/.graph/ (versionné avec le dépôt
+ * hôte), AGENTS.md auto-porteur, dossier de l'app = lien symbolique. Renvoie le docs/ créé.
+ */
+async function linkFolderToRepo(folder: string, repo: string, title: string, file: string): Promise<string> {
+  const repoPath = pathResolve(repo.trim())
+  const repoExists = await nodeFs
+    .stat(repoPath)
+    .then((s) => s.isDirectory())
+    .catch(() => false)
+  if (!repoExists) return fail(`Le dépôt « ${repoPath} » n'existe pas (répertoire attendu).`)
+
+  const docsDir = pathJoin(repoPath, 'docs')
+  await scaffoldDocsAndLink(folder, docsDir, title, file, KIT_ROOT, false)
+  return docsDir
+}
+
+/**
+ * Tronc commun --site / --repo : squelette docs (répertoires typés du narratif, AGENTS.md,
+ * portulan.yaml si publié par Portulan) puis lien symbolique <dataDir>/<dossier> → docs/.graph.
+ * Idempotent ; refuse d'écraser un dossier local existant (le déménager à la main d'abord).
+ */
+async function scaffoldDocsAndLink(
+  folder: string,
+  docsDir: string,
+  title: string,
+  file: string,
+  kitPath: string,
+  portulan: boolean,
+): Promise<void> {
   const target = pathJoin(docsDir, '.graph')
   await nodeFs.mkdir(target, { recursive: true })
   for (const [dir, intro] of Object.entries(DOCS_TYPE_DIRS)) {
@@ -254,22 +295,24 @@ async function linkFolderToSite(folder: string, site: string, title: string, fil
     if (!(await nodeFs.access(index).then(() => true, () => false)))
       await nodeFs.writeFile(index, `# ${dir[0]!.toUpperCase()}${dir.slice(1)}\n\n${intro}\n`, 'utf8')
   }
-  const yaml = pathJoin(docsDir, 'portulan.yaml')
-  if (!(await nodeFs.access(yaml).then(() => true, () => false)))
-    await nodeFs.writeFile(yaml, `title: ${title}\n`, 'utf8')
+  if (portulan) {
+    const yaml = pathJoin(docsDir, 'portulan.yaml')
+    if (!(await nodeFs.access(yaml).then(() => true, () => false)))
+      await nodeFs.writeFile(yaml, `title: ${title}\n`, 'utf8')
+  }
 
-  // AGENTS.md : le mode d'emploi du cadrage pour TOUT agent travaillant dans le dépôt du site —
+  // AGENTS.md : le mode d'emploi du cadrage pour TOUT agent travaillant dans le dépôt hôte —
   // c'est ce qui rend les commentaires « pour Claude » découvrables hors du dépôt flooow (un
-  // CLAUDE.md du site n'a qu'à le référencer). Idempotent : jamais réécrit s'il existe.
+  // CLAUDE.md du dépôt n'a qu'à le référencer). Idempotent : jamais réécrit s'il existe.
   const agentsMd = pathJoin(docsDir, 'AGENTS.md')
   if (!(await nodeFs.access(agentsMd).then(() => true, () => false)))
-    await nodeFs.writeFile(agentsMd, siteAgentsMd(`${folder}/${file}`), 'utf8')
+    await nodeFs.writeFile(agentsMd, siteAgentsMd(`${folder}/${file}`, kitPath), 'utf8')
 
   const linkPath = pathResolve(config.dataDir, folder)
   const st = await nodeFs.lstat(linkPath).catch(() => null)
   if (st?.isSymbolicLink()) {
     const cur = await nodeFs.readlink(linkPath)
-    if (pathResolve(cur) !== target)
+    if (pathResolve(cur) !== pathResolve(target))
       return fail(`Le dossier « ${folder} » est déjà lié à ${cur} — pas à ${target}.`)
   } else if (st) {
     return fail(
@@ -279,22 +322,21 @@ async function linkFolderToSite(folder: string, site: string, title: string, fil
     await nodeFs.mkdir(pathResolve(config.dataDir), { recursive: true })
     await nodeFs.symlink(target, linkPath)
   }
-  return `https://${slug}--docs.${ENV_URL_PREFIX[env!]}.pilot-in.net`
 }
 
 /**
  * Contenu du AGENTS.md posé dans le docs/ d'un site lié (voir linkFolderToSite). Auto-porteur :
  * un agent qui ne connaît RIEN de Flooow doit pouvoir traiter un commentaire avec ce seul fichier.
  */
-function siteAgentsMd(project: string): string {
+function siteAgentsMd(project: string, kitPath: string): string {
   return `# Cadrage Flooow de ce site — mode d'emploi agent
 
 Le cadrage visuel du projet vit dans \`.graph/\` (app Flooow). Il se LIT et s'ÉCRIT uniquement
 par la CLI \`flooow\`, invocable depuis n'importe quel répertoire :
 
 \`\`\`bash
-pnpm -s -C /srv/dev/flooow flooow summary ${project}     # sommaire (point d'entrée)
-pnpm -s -C /srv/dev/flooow flooow --help                        # le reste
+pnpm -s -C ${kitPath} flooow summary ${project}     # sommaire (point d'entrée)
+pnpm -s -C ${kitPath} flooow --help                        # le reste
 \`\`\`
 
 **INTERDIT : modifier un \`.graph.json\` à la main** — le fichier d'un projet ouvert est réécrit
@@ -306,9 +348,9 @@ seul chemin d'écriture.
 Les membres Pilot'in posent dans l'app des commentaires « ✳ pour Claude » sur les éléments du
 cadrage : ce sont des CONSIGNES à traiter.
 
-- **En début de session** : \`pnpm -s -C /srv/dev/flooow flooow comments ${project} --for-claude\`
+- **En début de session** : \`pnpm -s -C ${kitPath} flooow comments ${project} --for-claude\`
 - **Sur une référence collée** (\`flooow://…#…\`, copiée par le bouton 🔗 d'un fil dans l'app) :
-  \`pnpm -s -C /srv/dev/flooow flooow comment <référence>\` → le fil, la fiche de l'élément
+  \`pnpm -s -C ${kitPath} flooow comment <référence>\` → le fil, la fiche de l'élément
   ancré, et le mode d'emploi exact pour répondre.
 - **Après traitement**, répondre ET résoudre dans un même lot d'ops (\`reply-comment\` +
   \`resolve-comment\`) — un fil traité sans réponse ni résolution est un travail invisible.
@@ -320,7 +362,7 @@ répertoire), à éditer directement. Le graphe, lui, ne passe que par la CLI.
 `
 }
 
-async function cmdCreate(path: string, projectName: string | undefined, site?: string): Promise<string> {
+async function cmdCreate(path: string, projectName: string | undefined, site?: string, repo?: string): Promise<string> {
   const m = /^([^/]+)\/([^/]+)$/.exec(path.trim())
   if (!m) fail(`Chemin invalide : « ${path} » (attendu : <dossier>/<fichier>).`)
   const [, folder, file] = m
@@ -328,6 +370,7 @@ async function cmdCreate(path: string, projectName: string | undefined, site?: s
   const doc = createEmptyProject(displayName)
 
   const portulanUrl = site ? await linkFolderToSite(folder!, site, displayName, file!) : null
+  const repoDocs = repo ? await linkFolderToRepo(folder!, repo, displayName, file!) : null
 
   const base = await findServer()
   let slug = file!
@@ -362,6 +405,12 @@ async function cmdCreate(path: string, projectName: string | undefined, site?: s
       ? [
           `Docs (Portulan) : ${portulanUrl} — narratif markdown dans /srv/${site!.trim()}/docs/`,
           `Le JSON vit dans docs/.graph/ (ignoré par Portulan) ; le dossier de l'app est un lien symbolique.`,
+        ]
+      : []),
+    ...(repoDocs
+      ? [
+          `Rangé dans le dépôt hôte : ${repoDocs} (graphe versionné sous docs/.graph/, narratif markdown à côté).`,
+          `Mode d'emploi agent posé : ${repoDocs}/AGENTS.md — à référencer depuis le CLAUDE.md du dépôt.`,
         ]
       : []),
     `Prochaine étape agent : flooow summary ${folder}/${slug}`,
@@ -469,7 +518,7 @@ function renderOneComment(doc: ProjectDoc, path: string, handle: string): string
     '── Traiter ce fil ──',
     'Modifier le graphe si la consigne le demande (flooow ops pour le vocabulaire), puis répondre',
     'ET résoudre dans un même lot :',
-    `  echo '{"ops":[{"op":"reply-comment","comment":"${c.id.slice(0, 16)}","markdown":"Fait : …"},{"op":"resolve-comment","comment":"${c.id.slice(0, 16)}"}]}' | pnpm -s -C /srv/dev/flooow flooow apply ${path}`,
+    `  echo '{"ops":[{"op":"reply-comment","comment":"${c.id.slice(0, 16)}","markdown":"Fait : …"},{"op":"resolve-comment","comment":"${c.id.slice(0, 16)}"}]}' | pnpm -s -C ${KIT_ROOT} flooow apply ${path}`,
   )
   return lines.join('\n')
 }
@@ -499,6 +548,14 @@ async function main(): Promise<void> {
     if (!site || site.startsWith('--')) fail('--site attend une valeur : --site <env>/<slug>')
     args.splice(siteIdx, 2)
   }
+  let repo: string | undefined
+  const repoIdx = args.indexOf('--repo')
+  if (repoIdx !== -1) {
+    repo = args[repoIdx + 1]
+    if (!repo || repo.startsWith('--')) fail('--repo attend une valeur : --repo <chemin du dépôt>')
+    args.splice(repoIdx, 2)
+  }
+  if (site && repo) fail('--site et --repo sont exclusifs : un projet est rangé à un seul endroit.')
   let tag: string | undefined
   const tagIdx = args.indexOf('--tag')
   if (tagIdx !== -1) {
@@ -563,8 +620,8 @@ async function main(): Promise<void> {
       console.log(OPS_HELP)
       return
     case 'create': {
-      if (!path) fail('Usage : flooow create <dossier/fichier> [nom du projet…] [--site <env>/<slug>]')
-      console.log(await cmdCreate(path, rest.join(' '), site))
+      if (!path) fail('Usage : flooow create <dossier/fichier> [nom du projet…] [--site <env>/<slug> | --repo <chemin>]')
+      console.log(await cmdCreate(path, rest.join(' '), site, repo))
       return
     }
     case 'apply': {
