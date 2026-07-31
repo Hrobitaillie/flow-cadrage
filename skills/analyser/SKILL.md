@@ -41,7 +41,10 @@ commandes ssh en LECTURE SEULE : ls, cat, grep, head ; jamais d'écriture côté
    modules (3–8), fonctionnalités codées (ex. CMD-01), pages et blocs principaux, services.
    En cas de doute sur un périmètre, re-déléguer une vérification ciblée, ne pas lire soi-même.
 5. **Écriture** par lots `flooow apply` (vocabulaire : `flooow ops`) :
-   d'abord `set-site` + modules + services, puis pages/blocs, puis fonctionnalités avec
+   d'abord `set-site` + modules + services, puis pages/blocs — les pages AVEC leur
+   hiérarchie (`"parent"` : la hiérarchie de pages EST la hiérarchie d'URL, le slug est un
+   SEGMENT — page d'accueil = racine slug vide, `/offres/:uuid` = page `:uuid` sous
+   `offres`) —, puis fonctionnalités avec
    `content` (fiche markdown COURTE : quoi / comment c'est fait aujourd'hui / points
    d'attention), puis liens `realizedBy` et `dependsOn`, `add-api-ref` sur les blocs.
 6. **Vérification** : `flooow summary` — traiter les « points d'attention » (fonctionnalités
