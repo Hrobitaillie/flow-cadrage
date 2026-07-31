@@ -1,0 +1,11 @@
+import { chromium } from 'playwright'
+const b = await chromium.launch()
+const p = await b.newContext({ viewport: { width: 1500, height: 950 }, deviceScaleFactor: 3 }).then(c=>c.newPage())
+p.on('dialog', d=>d.accept())
+await p.goto('http://localhost:5219/', { waitUntil:'networkidle' })
+await p.waitForSelector('.app-shell')
+await p.click('button[aria-label="Menu fichier"]')
+await p.click('button[role="menuitem"]:has-text("Charger le cadrage locasyst")')
+await p.waitForTimeout(900)
+await p.screenshot({ path: new URL('./zoom-socle.png', import.meta.url).pathname, clip: { x: 156, y: 44, width: 210, height: 780 } })
+await b.close()

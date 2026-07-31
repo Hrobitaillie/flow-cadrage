@@ -1,0 +1,24 @@
+
+=== SESSION 2026-07-09T09:24:48.541Z url=http://localhost:5219/ ===
+[FLOOOW] push {layer: structural, funcEdgeMode: background, storeEdges: 0, flowEdges: 0, flowEdgeIds: Array(0)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 0, flowEdges: 0, flowEdgeIds: Array(0)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 0, flowEdges: 0, flowEdgeIds: Array(0)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 0, flowEdges: 0, flowEdgeIds: Array(0)}
+[FLOOOW] onConnectStart {nodeId: 57a2bb34-d15e-4153-88df-4d881764100e, handleId: s-bottom-free, handleType: source}
+[FLOOOW] onConnect {source: 57a2bb34-d15e-4153-88df-4d881764100e, target: 60ca416e-0094-431f-b519-c15104d80ef3, sh: s-bottom-free, th: t-top-free}
+[FLOOOW] onConnect create? {type: dependsOn, dup: false, willCreate: true}
+[FLOOOW] onConnectEnd {didConnect: true, src: 57a2bb34-d15e-4153-88df-4d881764100e, targetUnderCursor: 60ca416e-0094-431f-b519-c15104d80ef3}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 1, flowEdges: 1, flowEdgeIds: Array(1)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 1, flowEdges: 1, flowEdgeIds: Array(1)}
+[FLOOOW] onConnectStart {nodeId: 57a2bb34-d15e-4153-88df-4d881764100e, handleId: s-bottom-free, handleType: source}
+[FLOOOW] onConnect {source: 57a2bb34-d15e-4153-88df-4d881764100e, target: 60ca416e-0094-431f-b519-c15104d80ef3, sh: s-bottom-free, th: t-top-free}
+[FLOOOW] onConnect create? {type: dependsOn, dup: true, willCreate: false}
+[FLOOOW] onConnectEnd {didConnect: true, src: 57a2bb34-d15e-4153-88df-4d881764100e, targetUnderCursor: 60ca416e-0094-431f-b519-c15104d80ef3}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 1, flowEdges: 1, flowEdgeIds: Array(1)}
+[FLOOOW] onConnectStart {nodeId: 57a2bb34-d15e-4153-88df-4d881764100e, handleId: s-bottom-free, handleType: source}
+[FLOOOW] onConnectEnd {didConnect: false, src: 57a2bb34-d15e-4153-88df-4d881764100e, targetUnderCursor: 65573bc4-0122-465b-b22f-a0cb03e0fbb4}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 2, flowEdges: 2, flowEdgeIds: Array(2)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 2, flowEdges: 2, flowEdgeIds: Array(2)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 2, flowEdges: 2, flowEdgeIds: Array(2)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 2, flowEdges: 2, flowEdgeIds: Array(2)}
+[FLOOOW] push {layer: functional, funcEdgeMode: background, storeEdges: 2, flowEdges: 2, flowEdgeIds: Array(2)}

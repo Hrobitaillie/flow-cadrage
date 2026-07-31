@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "name": "Portail client Acme",
+    "formatVersion": 4,
+    "createdAt": "2026-07-07",
+    "updatedAt": "2026-07-07",
+    "pricing": {
+      "riskCoeff": 1.25,
+      "dailyRate": null
+    },
+    "homePageId": "page-tableau-de-bord"
+  },
+  "site": {
+    "attrs": {
+      "context": "Portail interne de suivi des commandes pour Acme.",
+      "constraints": [
+        "SSO obligatoire",
+        "hébergement on-premise"
+      ],
+      "notes": ""
+    }
+  },
+  "services": [
+    {
+      "id": "service-erp",
+      "name": "ERP Acme",
+      "baseUrl": "https://erp.acme.internal/api",
+      "auth": "OAuth2 client_credentials",
+      "risk": "medium",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/orders",
+          "notes": "pagination 100/p"
+        },
+        {
+          "method": "GET",
+          "path": "/orders/{id}",
+          "notes": ""
+        }
+      ],
+      "notes": "rate limit 60/min, pas de sandbox"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "page-tableau-de-bord",
+      "type": "frame",
+      "kind": "page",
+      "parentId": null,
+      "position": {
+        "x": 320,
+        "y": 140
+      },
+      "lot": 2,
+      "attrs": {
+        "name": "Tableau de bord commandes",
+        "route": "/admin/commandes",
+        "roles": [
+          "admin",
+          "gestionnaire"
+        ],
+        "description": "Vue d'ensemble des commandes en cours.",
+        "constraints": [
+          "temps réel statut"
+        ],
+        "logic": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "block-hero",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "page-tableau-de-bord",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "attrs": {
+        "name": "En-tête tableau de bord",
+        "blockType": "hero",
+        "description": "Bandeau titre + résumé des KPIs.",
+        "constraints": [],
+        "notes": ""
+      }
+    },
+    {
+      "id": "block-listing",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "page-tableau-de-bord",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "attrs": {
+        "name": "Listing commandes",
+        "blockType": "grid",
+        "description": "Tableau paginé des commandes.",
+        "constraints": [
+          "pagination serveur 50/p"
+        ],
+        "notes": ""
+      }
+    },
+    {
+      "id": "note-recherche",
+      "type": "note",
+      "kind": "behavior",
+      "parentId": null,
+      "attachedTo": "block-listing",
+      "position": {
+        "x": 620,
+        "y": 220
+      },
+      "lot": 1,
+      "attrs": {
+        "name": "Recherche à facettes",
+        "description": "Filtrage multi-critères des commandes.",
+        "facet": "fullstack",
+        "trigger": "saisie utilisateur",
+        "rules": "",
+        "hours": 6,
+        "notes": ""
+      }
+    },
+    {
+      "id": "note-api-orders",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "block-listing",
+      "position": {
+        "x": 620,
+        "y": 320
+      },
+      "attrs": {
+        "serviceId": "service-erp",
+        "method": "GET",
+        "path": "/orders",
+        "facet": "back",
+        "notes": "récupère la liste paginée"
+      }
+    }
+  ],
+  "edges": []
+}

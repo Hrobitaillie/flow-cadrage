@@ -1,0 +1,4 @@
+node_modules
+
+# Copies de travail locales (audits de sources externes)
+.audit/

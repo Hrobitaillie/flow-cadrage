@@ -1,0 +1,2194 @@
+{
+  "meta": {
+    "name": "Cadrage locasyst (adapté)",
+    "formatVersion": 3,
+    "createdAt": "2026-07-09",
+    "updatedAt": "2026-07-09",
+    "pricing": {
+      "riskCoeff": 1.25,
+      "dailyRate": null
+    },
+    "homePageId": null
+  },
+  "site": {
+    "attrs": {
+      "context": "Cadrage par fonctionnalité du site locasyst (LocaReception / Kiloutou), adapté sur Flooow. Source : catalogue .mdx locasyst-api.",
+      "constraints": [],
+      "notes": ""
+    }
+  },
+  "services": [],
+  "nodes": [
+    {
+      "id": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "00 · Socle",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "194adba5-8c43-4d15-bd80-d074b6c43a04",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-01",
+        "name": "Brancher le site sur l'API Locasuite (mode « site »)",
+        "description": "consommer l'API Locasyst/Factsyst via un mode d'accès dédié au site.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "3 instances Locasyst, un point d’entrée API unique ou un par agence ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 161
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-02",
+        "name": "Backend / proxy serveur (appels API côté serveur)",
+        "description": "le site appelle l'API Locasuite côté serveur, jamais depuis le navigateur (API interne).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 309
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-03",
+        "name": "Authentification du site",
+        "description": "le site porte sa propre auth (Locasyst n'expose aucun login/mot de passe).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "approche A (autonome) ou B (IdP/SSO) ? On s’oriente vers A.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 455
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-04",
+        "name": "Matching compte web ↔ idTiers",
+        "description": "relier chaque compte web au Tiers Locasyst (pivot universel).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "clé = email (Contact.email) ou SIRET (Tiers.siret) ? Stabilité de l’idTiers dans le temps ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "e41974ee-615b-4fdc-a4cf-3c27a4b8ac8b",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 601
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-05",
+        "name": "Création de compte avec validation Loca (« à valider »)",
+        "description": "la création n’est pas en self-service ; 3 voies (compte Locasyst existant / formulaire complet + SIRET / invité).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "remontée « à valider » + notif côté Locasyst = workflow site (en attendant) ou évolution PGS ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "799808fa-7ccc-4483-96d7-12e0b4d36e57",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 788
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-06",
+        "name": "Comptes invités (ponctuel, sans Locasyst)",
+        "description": "compte ponctuel pour une demande unique, sans connexion Locasyst (tel, mail, Calendly).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "a710ca41-87e4-4f49-acbf-ab7c81a9ca3b",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 921
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-07",
+        "name": "Multi-entité (un user ↔ plusieurs entreprises)",
+        "description": "un même utilisateur rattaché à plusieurs entreprises, bascule d’entité à la connexion ; connexion par SIRET possible.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "42a3e128-c100-4251-a4b1-47dbf81fe6b4",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1069
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-08",
+        "name": "Sous-comptes / établissements",
+        "description": "une entreprise a des établissements avec infos différentes (ex. Sodexo Paris vs Lyon).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1202
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-09",
+        "name": "Sync descendante par polling (date de modif)",
+        "description": "détecter créations/modifs côté Locasyst (clients, devis/locations) sans webhooks.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "b4759852-7b85-4387-8e8f-d314cf6f2fa6",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1337
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-10",
+        "name": "Sync suppression Locasyst → site",
+        "description": "une suppression côté Locasyst supprime le compte site.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "828219ac-8c9d-4dd1-8307-326f2846408c",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1457
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-11",
+        "name": "Déduplication des comptes à la reprise",
+        "description": "beaucoup de doublons de comptes aujourd’hui, à dédupliquer.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "26197a5f-104d-4e4f-b28a-9a2e86391e1b",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1577
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-12",
+        "name": "RGPD / périmètre de données",
+        "description": "ne pas importer le superflu, pas de données bancaires ; lecture live ; accès strict à son idTiers ; droit à l’oubli via isInactifClient.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "4a7461ae-6c5b-4528-9ef6-4b9a3b2a63b9",
+      "type": "feature",
+      "parentId": "856331d8-4a41-4d2a-965e-2fee23c88a78",
+      "position": {
+        "x": 0,
+        "y": 1723
+      },
+      "lot": null,
+      "attrs": {
+        "code": "SOC-13",
+        "name": "Reprise des comptes clients « location < 5 ans »",
+        "description": "reprendre uniquement les clients ayant loué il y a moins de 5 ans (pas les prospects).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 360,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "01 · Catalogue produit",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "9200de22-5d8a-48c0-940c-8369822929d5",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-01",
+        "name": "Listing catalogue (public / non connecté)",
+        "description": "toutes catégories, tous produits (hors exclus), services. Prix HT et TTC. Stock non affiché.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 133
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-02",
+        "name": "Fiche produit",
+        "description": "nom, description, photos, caractéristiques, prix selon profil, produits liés, favoris, « demander un devis », inspirations / moodboard.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "000ffc59-3729-42b6-ba81-0a9cf2cd5a6e",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 279
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-03",
+        "name": "Caractéristiques produit (depuis PIM)",
+        "description": "afficher les caractéristiques riches (diamètre, matériau, capacité…) absentes de Locasyst.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "61e50862-d26b-4596-b718-17076418fa98",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 412
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-04",
+        "name": "Médias produit (galerie + images dédiées, DAM)",
+        "description": "galerie d'images HD + champs d'images dédiés (mise en situation / ambiance).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "923f083a-6645-4718-9f51-0a6eeb866c18",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 547
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-05",
+        "name": "Conditionnement affiché",
+        "description": "afficher correctement le conditionnement sur les fiches.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "d6dbf6f2-9a5b-40e6-afc1-b53d72def8ca",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 667
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-06",
+        "name": "Lien vidéo YouTube sur la fiche",
+        "description": "afficher le lien tuto YouTube par produit + un espace « nos tutos ».",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "d50dc3b6-87cb-47f7-a756-ec7d0b6b38ac",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 787
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-07",
+        "name": "Variantes (produits distincts)",
+        "description": "afficher les variantes (ex. nappe rouge ≠ blanche) ; sélection sur la fiche ; prix par variante.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "8a4276a7-8270-4f11-afa3-b946d7bf3ca8",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 920
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-08",
+        "name": "Lots / ensembles (Kubo, Salon Palme)",
+        "description": "afficher un ensemble comme un produit unique, quantité fixe, louable uniquement en ensemble.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "45ec00b3-1619-4ac3-b78c-0cc23e79d1d0",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1053
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-09",
+        "name": "Cross-sell / accessoires",
+        "description": "suggérer des accessoires / produits liés.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "fab92809-81ad-4ee2-a58a-76612359a0cf",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1160
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-10",
+        "name": "Recherche produit — 2 options (simple / Algolia)",
+        "description": "recherche produit avec synonymes métier (chaise longue/chilienne, barnum/tente), facettes.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "28d07aa3-d048-4c6e-bf04-4086ba06f8f5",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1308
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-11",
+        "name": "Prix (public / net / remise, barré + %, HT/TTC)",
+        "description": "afficher prix public / net / remise ; prix barré + % ; HT en BtoB, TTC en BtoC.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "TTC sur devis (exposé par PGS) vs recalcul site.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "da4708a0-7019-41c6-946d-c98c80141d87",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1469
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-13",
+        "name": "Visibilité par segment (+ extras super client)",
+        "description": "même base pour non-connecté et connecté ; super client en plus : exclusifs, avant-premières, prix préférentiels, fiche technique++.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "les particuliers (BtoC) ont-ils un compte ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "e043203a-c8c9-47ed-b7ec-e388dd96c860",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1643
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-14",
+        "name": "Produits exclusifs par client / agence (OM)",
+        "description": "un client a des produits exclusifs, parfois avec une assiette réservée annuellement par agence (ex. OM).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "comment obtenir l’info de réservation par client & agence côté PGS ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "11a071cc-cf57-4511-a85a-f562ddb15596",
+      "type": "feature",
+      "parentId": "fab65a8b-b147-48c3-a820-4ea9d698e20e",
+      "position": {
+        "x": 0,
+        "y": 1817
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CAT-17",
+        "name": "Mise en avant des services (montage, accompagnement)",
+        "description": "mettre en avant les services & l’accompagnement (montage/démontage, conseil).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "périmètre éditorial exact.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 720,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "02 · Demande de devis",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "c8d01113-2a6c-4c28-ba11-a5073a1b9329",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-02",
+        "name": "Pré-panier (liste pour devis, sans connexion)",
+        "description": "« panier » = liste pour devis (pas de blocage stock, pas de paiement), possible sans être connecté.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "27809e82-cdc9-4f6c-9920-bdc6b7a834d1",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 148
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-03",
+        "name": "Gating connexion (devis / favoris → connexion)",
+        "description": "« demander un devis » et « ajouter aux favoris » déclenchent une connexion / création (même invité).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 296
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-04",
+        "name": "Formulaire de demande de devis → création location (statut 0)",
+        "description": "collecte dates / plage + mode de retrait (livraison ou retrait agence), bloc livraison / montage-démontage, puis crée une location statut 0 dans Locasyst.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "remontée propre côté ERP + création auto du contact (à cadrer PGS) ; arbre de questions livraison / montage à détailler.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ee15a2c1-b042-4967-a9d0-1948dd1a63ae",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 496
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-06",
+        "name": "Demande express / réservation (statut 1)",
+        "description": "formulaire rapide pour urgences < 48 h, réservé aux pros connectés, qui skippe le devis, avec rappel le lendemain.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "PGS autorise-t-il un statut 1 sans devis préalable ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ee73ca98-15de-45b3-9e71-29f20fdf0b4b",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 655
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-07",
+        "name": "Calendly post-devis (RDV commercial)",
+        "description": "après soumission, afficher un Calendly pour caler un RDV ; « heure de recontact souhaitée ».",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dd6e68da-b85f-4508-97f9-0695b7c6a001",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 788
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-08",
+        "name": "Emails transactionnels (via Brevo)",
+        "description": "confirmation de demande, « devis prêt / accepté / refusé », « devis non signé », « facture disponible ».",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "599518fb-2c68-4a56-a4a1-e57851b6cb8c",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 921
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-09",
+        "name": "Panier / devis abandonné",
+        "description": "relance « devis abandonné » (préparé non soumis), via timer côté site → Brevo.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ccd6074a-5476-42a2-adcf-f40412c7efda",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 1041
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-10",
+        "name": "Devis « vitrine » côté site",
+        "description": "générer de beaux devis (belles photos, mises en situation), distincts du document ERP.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "883463de-9cb8-428b-a61f-f8063b402d8b",
+      "type": "feature",
+      "parentId": "47432cbe-4335-4cf9-ac50-98ed65a4466a",
+      "position": {
+        "x": 0,
+        "y": 1174
+      },
+      "lot": null,
+      "attrs": {
+        "code": "DEV-11",
+        "name": "Codes promo (via Brevo) / pas de parrainage",
+        "description": "codes promo portés par campagne marketing (Brevo), pas un code natif ; pas de parrainage.",
+        "implies": "",
+        "perimeter": null,
+        "estimate": "",
+        "toConfirm": "le site doit-il accepter la saisie d’un code de campagne, ou tout est porté par Brevo ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "c9810f43-69f5-4afc-ab4c-ae9561dc68cc",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 1080,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "03 · Paiement",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "c0f69cff-c4b3-4522-8aaa-5fd3501bbf8c",
+      "type": "feature",
+      "parentId": "c9810f43-69f5-4afc-ab4c-ae9561dc68cc",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "PAY-01",
+        "name": "Paiement du devis validé (CentralPay)",
+        "description": "payer un devis validé via CentralPay, par acompte ou total, via un lien sur le devis et l’espace client.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "identique BtoB / BtoC ? Décision A/B.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "27c6a50f-d1fe-46f9-9d5a-246889c7aec2",
+      "type": "feature",
+      "parentId": "c9810f43-69f5-4afc-ab4c-ae9561dc68cc",
+      "position": {
+        "x": 0,
+        "y": 146
+      },
+      "lot": null,
+      "attrs": {
+        "code": "PAY-02",
+        "name": "Récupération auto du lien + liaison au devis Locasyst",
+        "description": "récupérer automatiquement le lien de paiement CentralPay et le lier au devis dans Locasyst.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "faisabilité côté CentralPay (à creuser).",
+        "notes": ""
+      }
+    },
+    {
+      "id": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 1440,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "04 · Espace perso",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "54305614-4ba3-48cb-ae53-7d916cd8457e",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-01",
+        "name": "Dashboard (mon compte) + 2 niveaux (admin / contact)",
+        "description": "accès « mon compte » ; tableau de bord différent selon admin entreprise vs contact.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "BtoC a-t-il un espace perso ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 148
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-02",
+        "name": "Rôles 2 niveaux + gestion contacts & accès",
+        "description": "admin entreprise (voit toutes les commandes) vs contact (voit les siennes). L’admin VIP crée/supprime des contacts.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "55c4bc24-dfbc-4585-9372-3cc0669abbfb",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 281
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-03",
+        "name": "Mes devis (liste, statuts, PDF, dupliquer)",
+        "description": "liste chronologique ; statuts ; télécharger le PDF ; dupliquer ; modifier → commercial ; lien devis ↔ facture (idAffaire).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "6953ed73-d1a7-44b8-bbd3-663b75806bb6",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 414
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-04",
+        "name": "Mes factures (liste, détail, PDF, statut)",
+        "description": "liste des factures ; entête ; détail ligne à ligne ; téléchargement PDF ; statut « payée / en retard / à venir ».",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "accès aux factures pour un user classique ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "f87d0204-c103-4c8a-acc0-cd9339408e48",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 573
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-05",
+        "name": "Notification « facture disponible » (Brevo)",
+        "description": "mail automatique « votre facture est disponible », porté par le site via Brevo.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ca3530c1-313b-442f-9b3d-cb64d82b1ee1",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 708
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-06",
+        "name": "Mes favoris",
+        "description": "liste de produits sauvegardés, mise en avant dans le catalogue connecté, exportable en catalogue PDF.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "e1e77abe-04a9-4a56-8f33-91c7be2203e0",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 841
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-07",
+        "name": "Mes produits (habituelles / favoris / exclusifs)",
+        "description": "mes commandes habituelles, mes favoris, mes produits exclusifs.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "d269dd4c-8821-443e-8c5a-6d2da6a333f3",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 976
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-08",
+        "name": "Tuto (vidéos YouTube)",
+        "description": "espace « nos tutos » (vidéos YouTube).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "eb0d7f15-1418-4502-bc92-a4dd7105349c",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 1083
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-09",
+        "name": "Exclus super client (ressources, codes, badges)",
+        "description": "exclusifs, avant-premières, ressources privées, codes de réduction, badges visibles sur le compte.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "b17e437b-e3b6-4819-a800-c7780febe67e",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 1231
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-10",
+        "name": "Informations personnelles (+ validation Loca fiche admin)",
+        "description": "l’utilisateur gère ses infos ; les modifs de la fiche admin passent par Loca pour validation.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "que peut modifier un user vs un admin exactement ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "acbf69a8-0501-4fe6-9015-15c3ff147449",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 1392
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-11",
+        "name": "Mes adresses (communes entreprise, validées Loca)",
+        "description": "adresses de livraison communes à l’entreprise ; le client peut en proposer, Loca valide.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "42106a59-c3a9-4264-9047-b3cd598d17b2",
+      "type": "feature",
+      "parentId": "7c195a7b-64c2-4199-af00-6254aa2796d3",
+      "position": {
+        "x": 0,
+        "y": 1540
+      },
+      "lot": null,
+      "attrs": {
+        "code": "EP-12",
+        "name": "Transfert / suppression de compte",
+        "description": "l’admin supprime des contacts ; suppression Locasyst ⇒ suppression site.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "1a2ef7bd-e40c-480d-853f-381d0a6e8476",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 1800,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "05 · Documents PDF",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "86e4ae5e-2671-491f-80c6-6a7a70b893b6",
+      "type": "feature",
+      "parentId": "1a2ef7bd-e40c-480d-853f-381d0a6e8476",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "PDF-01",
+        "name": "Fiche technique (dossier projet)",
+        "description": "PDF complet de la documentation d’un projet (produits, liens YouTube, brevets, fiches). Sans prix.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "accès réservé VIP/super client, ou aussi BtoB classique sur demande ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "b34a09ed-3d68-4927-bc7c-ac1673688f57",
+      "type": "feature",
+      "parentId": "1a2ef7bd-e40c-480d-853f-381d0a6e8476",
+      "position": {
+        "x": 0,
+        "y": 159
+      },
+      "lot": null,
+      "attrs": {
+        "code": "PDF-02",
+        "name": "Catalogue PDF (depuis favoris)",
+        "description": "liste de produits + images, depuis Mes favoris.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "73294d3d-4621-48e8-b084-c30812395de8",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 2160,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "06 · Boutiques éphémères (LocaStand)",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "5b687f67-9e18-438a-84d3-61a9a1c429ac",
+      "type": "feature",
+      "parentId": "73294d3d-4621-48e8-b084-c30812395de8",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "BOU-01",
+        "name": "Boutique éphémère (page privée, lien + mot de passe)",
+        "description": "page dédiée « salon XXX » reçue via un lien mail, avec les produits sélectionnés par Loca + le client.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "d40ae4c0-e88f-41c2-a440-18d90be791d8",
+      "type": "feature",
+      "parentId": "73294d3d-4621-48e8-b084-c30812395de8",
+      "position": {
+        "x": 0,
+        "y": 148
+      },
+      "lot": null,
+      "attrs": {
+        "code": "BOU-02",
+        "name": "Interface interne de génération (commerciaux)",
+        "description": "back-office où les commerciaux créent une boutique, sélectionnent les produits et fixent le prix.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "9c6ef4f9-f1a5-4732-8b44-2743306513a7",
+      "type": "feature",
+      "parentId": "73294d3d-4621-48e8-b084-c30812395de8",
+      "position": {
+        "x": 0,
+        "y": 296
+      },
+      "lot": null,
+      "attrs": {
+        "code": "BOU-03",
+        "name": "Produits hors PGS dans une boutique",
+        "description": "inclure des articles absents de PGS (sous-traitance).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "matérialisation (création manuelle PGS / code sous-traitant / côté site) ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "7a7c5632-1576-4cc2-9e89-b2487ad19d65",
+      "type": "feature",
+      "parentId": "73294d3d-4621-48e8-b084-c30812395de8",
+      "position": {
+        "x": 0,
+        "y": 442
+      },
+      "lot": null,
+      "attrs": {
+        "code": "BOU-04",
+        "name": "Paiement / commande de la boutique",
+        "description": "commande / paiement de la boutique (dégradé V1, en ligne V2).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "e15d825a-c110-4037-a656-f7a025bcc1ce",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 2520,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "07 · Intégrations & outils tiers",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "type": "feature",
+      "parentId": "e15d825a-c110-4037-a656-f7a025bcc1ce",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "INT-01",
+        "name": "Brevo : connecteur site → Brevo",
+        "description": "le site appelle Brevo : newsletter, campagne, segmentation, transactionnels, relance abandon.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "double opt-in Brevo ou consentement côté site (RGPD) ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ae858079-7060-4ab1-83bc-ce93e7bd4417",
+      "type": "feature",
+      "parentId": "e15d825a-c110-4037-a656-f7a025bcc1ce",
+      "position": {
+        "x": 0,
+        "y": 146
+      },
+      "lot": null,
+      "attrs": {
+        "code": "INT-02",
+        "name": "Brevo : relais événementiel (polling) Locasyst → Brevo",
+        "description": "un événement Locasyst déclenche un mail Brevo (devis non signé, nouveau client → liste).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "b48a9546-bdb0-44d8-83a2-8dc1b1b51717",
+      "type": "feature",
+      "parentId": "e15d825a-c110-4037-a656-f7a025bcc1ce",
+      "position": {
+        "x": 0,
+        "y": 294
+      },
+      "lot": null,
+      "attrs": {
+        "code": "INT-03",
+        "name": "PIM/DAM : consommation (enrichissement + médias)",
+        "description": "le site lit le PIM/DAM (descriptions, caractéristiques, médias HD) et combine avec Locasyst.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "91b39ae8-45a5-400f-b3f9-e681985a848e",
+      "type": "feature",
+      "parentId": "e15d825a-c110-4037-a656-f7a025bcc1ce",
+      "position": {
+        "x": 0,
+        "y": 442
+      },
+      "lot": null,
+      "attrs": {
+        "code": "INT-04",
+        "name": "Offres d’emploi (Kiloutou)",
+        "description": "afficher les offres d’emploi (portail recrutement Kiloutou) sur le site.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "conditions d’accès au flux/API Gestmax ; périmètre des offres à afficher ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 2880,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "08 · Contenu éditorial (CMS)",
+        "description": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "97821849-ec44-4900-a566-1415f7032f0c",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-01",
+        "name": "Socle de contenu éditorial (CMS)",
+        "description": "gérer des pages et contenus éditoriaux (inspirations, expertises, à propos, ressources).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "a6423a3d-f877-454c-a678-ae62f2514ae1",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 133
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-02",
+        "name": "Archive inspirations (par thème)",
+        "description": "listing des inspirations, organisé par thème, avec des images qui valorisent les produits.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "« Réalisations » a-t-il sa propre page ou est-il porté via le moodboard ?",
+        "notes": ""
+      }
+    },
+    {
+      "id": "41d0d06e-a42d-40d8-9e51-894d78601970",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 292
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-03",
+        "name": "Single inspiration",
+        "description": "page détail d’une inspiration (galerie, mise en situation, produits associés).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "4d4bdafa-bc12-475a-915a-6540b2bce0f8",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 412
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-04",
+        "name": "Pages Expertises (template duplicable)",
+        "description": "pages de présentation des expertises / services (création de salons, montage/démontage, livraison…).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "liste exacte des pages expertises.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ec5b6b35-49ed-4708-9551-9fddf6060ff6",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 558
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-05",
+        "name": "À propos : Qui sommes-nous",
+        "description": "page institutionnelle de présentation.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "682f0524-a009-4ec7-a090-9ac05c14d2d1",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 665
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-06",
+        "name": "Nos engagements / seconde vie (duplicable)",
+        "description": "page(s) d’engagements (template duplicable), dont la seconde vie.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ce9ac3ca-a896-494c-957e-ce2b7adb0766",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 785
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-07",
+        "name": "On recrute / Marque employeur (+ offres Kiloutou)",
+        "description": "page marque employeur + offres d’emploi (archive + single) alimentées par l’ATS Gestmax.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "conditions d’accès au flux/API Gestmax (cf. INT-04).",
+        "notes": ""
+      }
+    },
+    {
+      "id": "5f3f67aa-b8e9-4e11-a7d4-c4ec7589b714",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 946
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-08",
+        "name": "Références : archive",
+        "description": "listing des références (réalisations / clients marquants).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "a879dcaf-09d4-471f-aa70-10360fb8edbf",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1066
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-09",
+        "name": "Single référence (duplicable)",
+        "description": "page détail d’une référence (visuels, descriptif, produits / services mobilisés).",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "495e7e85-ecd7-4677-85f4-7937374e4715",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1186
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-10",
+        "name": "Actualités / Blog : archive",
+        "description": "listing des actualités et articles de blog.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "726efeee-5d78-454d-afe0-79a826706c6e",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1306
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-11",
+        "name": "Single article / actualité (duplicable)",
+        "description": "page détail d’un article de blog ou d’une actualité.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "d1cdbdaa-20cb-4b0e-82c0-b99c184da996",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1426
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-12",
+        "name": "FAQ général",
+        "description": "page FAQ (questions / réponses), organisée par rubriques.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "8d08c235-1be5-4a11-9c46-3046332120a9",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1546
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-13",
+        "name": "Contact",
+        "description": "page de contact (formulaire + coordonnées), connectée à Brevo.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "2a7b8539-b2fb-4fa3-ab77-4a6805770556",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1666
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-14",
+        "name": "Nos agences",
+        "description": "page présentant les 3 agences, coordonnées et zones.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "a2900880-876b-4fcf-951b-a627914e4aec",
+      "type": "feature",
+      "parentId": "8afee1d1-4617-4d27-bee9-f604eccabb84",
+      "position": {
+        "x": 0,
+        "y": 1786
+      },
+      "lot": null,
+      "attrs": {
+        "code": "CNT-15",
+        "name": "Autres pages de contenu (à compléter)",
+        "description": "d’autres pages de contenu, à définir.",
+        "implies": "",
+        "perimeter": "site",
+        "estimate": "",
+        "toConfirm": "lesquelles ? (liste à compléter)",
+        "notes": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "4be4affb-dec5-4940-8a07-d761875e3e08",
+      "type": "dependsOn",
+      "source": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "target": "194adba5-8c43-4d15-bd80-d074b6c43a04",
+      "attrs": {}
+    },
+    {
+      "id": "3163b72c-1599-4f2f-888c-51bf6a983d0c",
+      "type": "dependsOn",
+      "source": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "6fdb34aa-76a1-4a31-bfd9-d9f2583adcd2",
+      "type": "dependsOn",
+      "source": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "target": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "attrs": {}
+    },
+    {
+      "id": "66299184-cb59-426d-87a6-9cae8909abe9",
+      "type": "dependsOn",
+      "source": "e41974ee-615b-4fdc-a4cf-3c27a4b8ac8b",
+      "target": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "attrs": {}
+    },
+    {
+      "id": "73dd7823-c6b2-44c8-aeff-ba4c257003f0",
+      "type": "dependsOn",
+      "source": "799808fa-7ccc-4483-96d7-12e0b4d36e57",
+      "target": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "attrs": {}
+    },
+    {
+      "id": "da91a808-80d6-4f9e-a556-c831e8af84db",
+      "type": "dependsOn",
+      "source": "a710ca41-87e4-4f49-acbf-ab7c81a9ca3b",
+      "target": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "attrs": {}
+    },
+    {
+      "id": "441eb16e-1e23-47fa-ab04-0f0985f11a8a",
+      "type": "dependsOn",
+      "source": "42a3e128-c100-4251-a4b1-47dbf81fe6b4",
+      "target": "a710ca41-87e4-4f49-acbf-ab7c81a9ca3b",
+      "attrs": {}
+    },
+    {
+      "id": "85c0288a-7cf9-4990-99ca-a647d47ce8d1",
+      "type": "dependsOn",
+      "source": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "bdf3193a-cb08-4537-8761-991d76c9024d",
+      "type": "dependsOn",
+      "source": "b4759852-7b85-4387-8e8f-d314cf6f2fa6",
+      "target": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "attrs": {}
+    },
+    {
+      "id": "64fd5c73-0f1c-458a-8447-d2238975b50f",
+      "type": "dependsOn",
+      "source": "828219ac-8c9d-4dd1-8307-326f2846408c",
+      "target": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "attrs": {}
+    },
+    {
+      "id": "bdaba717-c8ce-4567-ab76-409105f85cd5",
+      "type": "dependsOn",
+      "source": "26197a5f-104d-4e4f-b28a-9a2e86391e1b",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "6b1c574b-fe3d-4706-8ca7-b51a2d6d4e9d",
+      "type": "dependsOn",
+      "source": "9200de22-5d8a-48c0-940c-8369822929d5",
+      "target": "fab92809-81ad-4ee2-a58a-76612359a0cf",
+      "attrs": {}
+    },
+    {
+      "id": "c4cb4d00-e455-4f05-9073-cc33cdee368d",
+      "type": "dependsOn",
+      "source": "9200de22-5d8a-48c0-940c-8369822929d5",
+      "target": "28d07aa3-d048-4c6e-bf04-4086ba06f8f5",
+      "attrs": {}
+    },
+    {
+      "id": "1eccddfd-542d-4232-abaf-c94289c6b604",
+      "type": "dependsOn",
+      "source": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "target": "000ffc59-3729-42b6-ba81-0a9cf2cd5a6e",
+      "attrs": {}
+    },
+    {
+      "id": "382a5ed9-a40b-4b08-8f04-e337475ead41",
+      "type": "dependsOn",
+      "source": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "target": "61e50862-d26b-4596-b718-17076418fa98",
+      "attrs": {}
+    },
+    {
+      "id": "533c3ae2-fd84-48dc-8461-8428dac5c5de",
+      "type": "dependsOn",
+      "source": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "target": "28d07aa3-d048-4c6e-bf04-4086ba06f8f5",
+      "attrs": {}
+    },
+    {
+      "id": "e44676c9-d751-490f-9f43-ebc3c58c0fed",
+      "type": "dependsOn",
+      "source": "d50dc3b6-87cb-47f7-a756-ec7d0b6b38ac",
+      "target": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "attrs": {}
+    },
+    {
+      "id": "3f3b3d53-d732-49ab-b060-4df5fcce68f9",
+      "type": "dependsOn",
+      "source": "45ec00b3-1619-4ac3-b78c-0cc23e79d1d0",
+      "target": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "attrs": {}
+    },
+    {
+      "id": "ad995f54-586a-466b-a2db-ecc323a09286",
+      "type": "dependsOn",
+      "source": "fab92809-81ad-4ee2-a58a-76612359a0cf",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "e6c3adb9-8503-43cd-86de-14115fa752a4",
+      "type": "dependsOn",
+      "source": "28d07aa3-d048-4c6e-bf04-4086ba06f8f5",
+      "target": "1a731c48-e72a-4b63-a61e-e097ac34be0f",
+      "attrs": {}
+    },
+    {
+      "id": "cd2560ee-ba9c-45d4-be38-6411e25e5e83",
+      "type": "dependsOn",
+      "source": "11a071cc-cf57-4511-a85a-f562ddb15596",
+      "target": "9200de22-5d8a-48c0-940c-8369822929d5",
+      "attrs": {}
+    },
+    {
+      "id": "0d25b123-01e8-4b80-b43c-7db10672c11c",
+      "type": "dependsOn",
+      "source": "c8d01113-2a6c-4c28-ba11-a5073a1b9329",
+      "target": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "attrs": {}
+    },
+    {
+      "id": "1b0113c3-6236-4142-ad31-c5c351a85fab",
+      "type": "dependsOn",
+      "source": "27809e82-cdc9-4f6c-9920-bdc6b7a834d1",
+      "target": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "attrs": {}
+    },
+    {
+      "id": "de4ae767-a0a7-4842-a8b1-ebe3b9eac194",
+      "type": "dependsOn",
+      "source": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "target": "c8d01113-2a6c-4c28-ba11-a5073a1b9329",
+      "attrs": {}
+    },
+    {
+      "id": "ee1bf2bf-2c3a-4c04-b13b-edf2d5ea762e",
+      "type": "dependsOn",
+      "source": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "8693996f-d2f0-436c-a4ef-238c139dc056",
+      "type": "dependsOn",
+      "source": "ee15a2c1-b042-4967-a9d0-1948dd1a63ae",
+      "target": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "attrs": {}
+    },
+    {
+      "id": "b19358fd-36fc-4dc9-9b3b-cffebc44584f",
+      "type": "dependsOn",
+      "source": "ee15a2c1-b042-4967-a9d0-1948dd1a63ae",
+      "target": "e41974ee-615b-4fdc-a4cf-3c27a4b8ac8b",
+      "attrs": {}
+    },
+    {
+      "id": "49057f06-b237-4b16-941f-a5e0c3ad87ee",
+      "type": "dependsOn",
+      "source": "ee73ca98-15de-45b3-9e71-29f20fdf0b4b",
+      "target": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "attrs": {}
+    },
+    {
+      "id": "b1e0db98-2437-46ef-a77f-d67e642cc0b8",
+      "type": "dependsOn",
+      "source": "dd6e68da-b85f-4508-97f9-0695b7c6a001",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "6bf23641-598c-420a-a666-d43675afa2cd",
+      "type": "dependsOn",
+      "source": "dd6e68da-b85f-4508-97f9-0695b7c6a001",
+      "target": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "attrs": {}
+    },
+    {
+      "id": "a3932dbc-162a-4e51-b2ab-d10ec05118c3",
+      "type": "dependsOn",
+      "source": "599518fb-2c68-4a56-a4a1-e57851b6cb8c",
+      "target": "c8d01113-2a6c-4c28-ba11-a5073a1b9329",
+      "attrs": {}
+    },
+    {
+      "id": "1230d7c0-5c9b-4cf3-8af6-6cc2c6a6bd61",
+      "type": "dependsOn",
+      "source": "599518fb-2c68-4a56-a4a1-e57851b6cb8c",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "d7b8109c-6c39-499d-97f3-144939729327",
+      "type": "dependsOn",
+      "source": "883463de-9cb8-428b-a61f-f8063b402d8b",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "88deb750-b272-4330-9cf0-1315cde7cbac",
+      "type": "dependsOn",
+      "source": "c0f69cff-c4b3-4522-8aaa-5fd3501bbf8c",
+      "target": "fa133aea-fe29-4069-ba88-93d4d2435350",
+      "attrs": {}
+    },
+    {
+      "id": "acb5417a-fe92-4a33-b8fd-a0bb1a1a4060",
+      "type": "dependsOn",
+      "source": "27c6a50f-d1fe-46f9-9d5a-246889c7aec2",
+      "target": "c0f69cff-c4b3-4522-8aaa-5fd3501bbf8c",
+      "attrs": {}
+    },
+    {
+      "id": "2bc2357d-c3d7-41e4-bbc4-2e9cd35da1b9",
+      "type": "dependsOn",
+      "source": "54305614-4ba3-48cb-ae53-7d916cd8457e",
+      "target": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "attrs": {}
+    },
+    {
+      "id": "c0d08b84-ec7f-4e46-a0c9-4eab92912a22",
+      "type": "dependsOn",
+      "source": "54305614-4ba3-48cb-ae53-7d916cd8457e",
+      "target": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "attrs": {}
+    },
+    {
+      "id": "83f797ab-4d5f-4b10-8ae7-090d5427393d",
+      "type": "dependsOn",
+      "source": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "target": "a710ca41-87e4-4f49-acbf-ab7c81a9ca3b",
+      "attrs": {}
+    },
+    {
+      "id": "d6e1a421-eebc-4e47-ac9b-b19dae376348",
+      "type": "dependsOn",
+      "source": "55c4bc24-dfbc-4585-9372-3cc0669abbfb",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "13dd3779-56a8-4fee-a519-eb9dcfc69d34",
+      "type": "dependsOn",
+      "source": "55c4bc24-dfbc-4585-9372-3cc0669abbfb",
+      "target": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "attrs": {}
+    },
+    {
+      "id": "77f1f4f7-e8e7-49d0-b1b8-0e9e0eca4aa6",
+      "type": "dependsOn",
+      "source": "f87d0204-c103-4c8a-acc0-cd9339408e48",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "f2eaf94c-f562-41f0-903d-6d0878e73ba4",
+      "type": "dependsOn",
+      "source": "ca3530c1-313b-442f-9b3d-cb64d82b1ee1",
+      "target": "acefe9f2-d80c-42fb-8291-25814e38b36c",
+      "attrs": {}
+    },
+    {
+      "id": "a2b5b20f-c0a8-41f9-a25a-7799bbb86b2a",
+      "type": "dependsOn",
+      "source": "e1e77abe-04a9-4a56-8f33-91c7be2203e0",
+      "target": "55c4bc24-dfbc-4585-9372-3cc0669abbfb",
+      "attrs": {}
+    },
+    {
+      "id": "24331acf-8a62-4c48-8569-6b4bdaa3771d",
+      "type": "dependsOn",
+      "source": "eb0d7f15-1418-4502-bc92-a4dd7105349c",
+      "target": "da4708a0-7019-41c6-946d-c98c80141d87",
+      "attrs": {}
+    },
+    {
+      "id": "d93f9f88-14d8-4e49-9cb4-e5401d0dfbfc",
+      "type": "dependsOn",
+      "source": "b17e437b-e3b6-4819-a800-c7780febe67e",
+      "target": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "attrs": {}
+    },
+    {
+      "id": "ecd97829-cb59-47c6-9495-da4555cd2020",
+      "type": "dependsOn",
+      "source": "acbf69a8-0501-4fe6-9015-15c3ff147449",
+      "target": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "attrs": {}
+    },
+    {
+      "id": "ed0375b6-1696-467d-9996-3d184fa1ac1d",
+      "type": "dependsOn",
+      "source": "42106a59-c3a9-4264-9047-b3cd598d17b2",
+      "target": "10859944-e4e4-4757-9fe6-244c9067481d",
+      "attrs": {}
+    },
+    {
+      "id": "c16c037f-3c23-4dd4-89db-d36ec6f6332e",
+      "type": "dependsOn",
+      "source": "42106a59-c3a9-4264-9047-b3cd598d17b2",
+      "target": "b4759852-7b85-4387-8e8f-d314cf6f2fa6",
+      "attrs": {}
+    },
+    {
+      "id": "a8470431-fe55-4b56-9350-a4bf7a688b7a",
+      "type": "dependsOn",
+      "source": "86e4ae5e-2671-491f-80c6-6a7a70b893b6",
+      "target": "55c4bc24-dfbc-4585-9372-3cc0669abbfb",
+      "attrs": {}
+    },
+    {
+      "id": "aa552001-bed2-4396-94e7-30c106e919b6",
+      "type": "dependsOn",
+      "source": "b34a09ed-3d68-4927-bc7c-ac1673688f57",
+      "target": "ca3530c1-313b-442f-9b3d-cb64d82b1ee1",
+      "attrs": {}
+    },
+    {
+      "id": "9068b50c-d11f-4889-9d93-26dff7d5091e",
+      "type": "dependsOn",
+      "source": "5b687f67-9e18-438a-84d3-61a9a1c429ac",
+      "target": "9200de22-5d8a-48c0-940c-8369822929d5",
+      "attrs": {}
+    },
+    {
+      "id": "786571f9-3b67-4d69-a714-705e2fc5f79e",
+      "type": "dependsOn",
+      "source": "d40ae4c0-e88f-41c2-a440-18d90be791d8",
+      "target": "5b687f67-9e18-438a-84d3-61a9a1c429ac",
+      "attrs": {}
+    },
+    {
+      "id": "5f690321-aa42-44e7-8976-be56dfdf3957",
+      "type": "dependsOn",
+      "source": "9c6ef4f9-f1a5-4732-8b44-2743306513a7",
+      "target": "d40ae4c0-e88f-41c2-a440-18d90be791d8",
+      "attrs": {}
+    },
+    {
+      "id": "f2e3c5de-b4c8-489e-b6c7-9b0bf69cfa6f",
+      "type": "dependsOn",
+      "source": "7a7c5632-1576-4cc2-9e89-b2487ad19d65",
+      "target": "5b687f67-9e18-438a-84d3-61a9a1c429ac",
+      "attrs": {}
+    },
+    {
+      "id": "f0fdfccf-500f-4977-ba2e-2e606fa76a73",
+      "type": "dependsOn",
+      "source": "7a7c5632-1576-4cc2-9e89-b2487ad19d65",
+      "target": "c0f69cff-c4b3-4522-8aaa-5fd3501bbf8c",
+      "attrs": {}
+    },
+    {
+      "id": "51d7ad2a-685c-4d45-8e64-1593ced0269a",
+      "type": "dependsOn",
+      "source": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "target": "b3cf97b3-ee0d-46bf-b44f-bb9078e69de9",
+      "attrs": {}
+    },
+    {
+      "id": "f2aba7b3-1f7c-4c38-86f5-ebf22c257d4d",
+      "type": "dependsOn",
+      "source": "ae858079-7060-4ab1-83bc-ce93e7bd4417",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "c5b1c615-c038-48b5-a14c-a131c680288b",
+      "type": "dependsOn",
+      "source": "ae858079-7060-4ab1-83bc-ce93e7bd4417",
+      "target": "44efd4b1-aa1e-4722-bbcf-cfae51e901d0",
+      "attrs": {}
+    },
+    {
+      "id": "0b95a428-f924-475d-bf01-f471cecb3b6a",
+      "type": "dependsOn",
+      "source": "a6423a3d-f877-454c-a678-ae62f2514ae1",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "b52f8112-54c1-4f4b-90f6-c5d65281db48",
+      "type": "dependsOn",
+      "source": "a6423a3d-f877-454c-a678-ae62f2514ae1",
+      "target": "6e2262ca-e32d-49ba-9c8b-c0be6e92c03d",
+      "attrs": {}
+    },
+    {
+      "id": "562956d5-3e39-4d89-b8a5-ac873ca53157",
+      "type": "dependsOn",
+      "source": "41d0d06e-a42d-40d8-9e51-894d78601970",
+      "target": "a6423a3d-f877-454c-a678-ae62f2514ae1",
+      "attrs": {}
+    },
+    {
+      "id": "62615947-b34f-4dc3-8ae9-5208576d3581",
+      "type": "dependsOn",
+      "source": "4d4bdafa-bc12-475a-915a-6540b2bce0f8",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "a8d78690-5322-4e45-adcf-b72fa4066400",
+      "type": "dependsOn",
+      "source": "ec5b6b35-49ed-4708-9551-9fddf6060ff6",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "3c42e15d-8631-4634-823e-270bf76a2bdc",
+      "type": "dependsOn",
+      "source": "682f0524-a009-4ec7-a090-9ac05c14d2d1",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "3cd4a521-a856-4cb2-9a62-a499d908e0ed",
+      "type": "dependsOn",
+      "source": "ce9ac3ca-a896-494c-957e-ce2b7adb0766",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "87d3f23d-afb4-4d8f-a49a-b7f557b80089",
+      "type": "dependsOn",
+      "source": "ce9ac3ca-a896-494c-957e-ce2b7adb0766",
+      "target": "91b39ae8-45a5-400f-b3f9-e681985a848e",
+      "attrs": {}
+    },
+    {
+      "id": "ef54c18c-449d-47ac-9e4e-b48266449e8b",
+      "type": "dependsOn",
+      "source": "5f3f67aa-b8e9-4e11-a7d4-c4ec7589b714",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "21e31db3-1581-421b-a947-96eade561bdd",
+      "type": "dependsOn",
+      "source": "a879dcaf-09d4-471f-aa70-10360fb8edbf",
+      "target": "5f3f67aa-b8e9-4e11-a7d4-c4ec7589b714",
+      "attrs": {}
+    },
+    {
+      "id": "4a759c51-b70e-4289-8e09-99926765e12d",
+      "type": "dependsOn",
+      "source": "495e7e85-ecd7-4677-85f4-7937374e4715",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "5bbd071c-8acd-4e40-8f2c-2918277fa558",
+      "type": "dependsOn",
+      "source": "726efeee-5d78-454d-afe0-79a826706c6e",
+      "target": "495e7e85-ecd7-4677-85f4-7937374e4715",
+      "attrs": {}
+    },
+    {
+      "id": "e46f823c-b01a-4226-8657-628dd2413d41",
+      "type": "dependsOn",
+      "source": "d1cdbdaa-20cb-4b0e-82c0-b99c184da996",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "c5cf0487-e6c3-47de-926f-38bf9ba6e285",
+      "type": "dependsOn",
+      "source": "8d08c235-1be5-4a11-9c46-3046332120a9",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "0cffa8e9-d827-49b5-a469-77d740e92ff4",
+      "type": "dependsOn",
+      "source": "8d08c235-1be5-4a11-9c46-3046332120a9",
+      "target": "9f826062-f071-4a4c-b5ad-55bb1b640c15",
+      "attrs": {}
+    },
+    {
+      "id": "0b76ee98-a3ef-417c-8c14-9edd55ed9f9e",
+      "type": "dependsOn",
+      "source": "2a7b8539-b2fb-4fa3-ab77-4a6805770556",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    },
+    {
+      "id": "34d0bb89-c186-4a4c-a485-3be9753646b8",
+      "type": "dependsOn",
+      "source": "a2900880-876b-4fcf-951b-a627914e4aec",
+      "target": "97821849-ec44-4900-a566-1415f7032f0c",
+      "attrs": {}
+    }
+  ]
+}

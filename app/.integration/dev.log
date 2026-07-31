@@ -1,0 +1,17 @@
+
+> flooow-app@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 231 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+15:06:19 [vite] page reload src/main.ts
+15:06:30 [vite] page reload src/main.ts
+15:08:09 [vite] hmr update /src/panels/PropertiesPanel.vue, /src/style.css
+15:08:15 [vite] hmr update /src/panels/PropertiesPanel.vue, /src/style.css
+15:08:21 [vite] hmr update /src/panels/PropertiesPanel.vue, /src/style.css
+15:09:49 [vite] hmr update /src/style.css, /src/views/SpecsView.vue, /src/views/ApiView.vue, /src/canvas/FlowCanvas.vue, /src/canvas/nodes/PageFrame.vue, /src/canvas/nodes/SectionFrame.vue, /src/panels/StatusChip.vue, /src/panels/PanelLayer.vue, /src/panels/ToolDock.vue, /src/panels/PropertiesPanel.vue, /src/panels/SearchPopover.vue
+15:10:29 [vite] page reload src/main.ts
+15:11:01 [vite] hmr update /src/App.vue, /src/style.css

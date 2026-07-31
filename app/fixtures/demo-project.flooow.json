@@ -1,0 +1,957 @@
+{
+  "meta": {
+    "name": "Portail client B2B — ACME Distribution",
+    "formatVersion": 3,
+    "createdAt": "2026-07-07",
+    "updatedAt": "2026-07-08",
+    "pricing": {
+      "riskCoeff": 1.25,
+      "dailyRate": 550
+    },
+    "homePageId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4"
+  },
+  "site": {
+    "attrs": {
+      "context": "Portail client B2B d'ACME Distribution : les clients professionnels consultent le catalogue, passent commande et suivent leur compte. Authentification SSO obligatoire, tarifs négociés par client, paiement en ligne ou sur facture.",
+      "constraints": [
+        "SSO obligatoire (OIDC) pour tout accès authentifié",
+        "RGPD : minimisation des données, consentement traçable",
+        "Compatibilité navigateurs : 2 dernières versions Chrome/Edge/Firefox/Safari",
+        "Accessibilité RGAA AA"
+      ],
+      "notes": "MVP visé pour le T4. Le catalogue est la brique la plus urgente."
+    }
+  },
+  "services": [
+    {
+      "id": "cf4c30a8-de84-4a07-b2cb-c52c3eb77d27",
+      "name": "ERP SAP (produits & commandes)",
+      "baseUrl": "https://erp.acme-b2b.com/api/v2",
+      "auth": "OAuth2 client_credentials",
+      "risk": "high",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/products",
+          "notes": "Catalogue paginé (100/page), tarifs par client via header X-Customer-Id"
+        },
+        {
+          "method": "GET",
+          "path": "/products/{sku}",
+          "notes": "Fiche produit détaillée"
+        },
+        {
+          "method": "GET",
+          "path": "/stock/{sku}",
+          "notes": "Disponibilité temps réel par entrepôt"
+        },
+        {
+          "method": "POST",
+          "path": "/orders",
+          "notes": "Création de commande, idempotency-key requise"
+        },
+        {
+          "method": "GET",
+          "path": "/orders/{id}",
+          "notes": "Suivi du statut de commande"
+        },
+        {
+          "method": "GET",
+          "path": "/invoices",
+          "notes": "Factures du client connecté"
+        }
+      ],
+      "notes": "Système central, rate limit 60 req/min, fenêtre de maintenance dimanche 02h-04h. Point de défaillance critique."
+    },
+    {
+      "id": "d5b414d7-aeda-463b-a306-ab98c920ebd9",
+      "name": "Auth SSO (Keycloak)",
+      "baseUrl": "https://sso.acme-b2b.com/realms/b2b",
+      "auth": "OIDC / OAuth2 Authorization Code + PKCE",
+      "risk": "medium",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/protocol/openid-connect/token",
+          "notes": "Échange code → jetons access/refresh"
+        },
+        {
+          "method": "GET",
+          "path": "/protocol/openid-connect/userinfo",
+          "notes": "Profil et rôles de l'utilisateur"
+        },
+        {
+          "method": "POST",
+          "path": "/protocol/openid-connect/logout",
+          "notes": "Déconnexion globale (back-channel)"
+        }
+      ],
+      "notes": "Realm b2b, rôles : client, acheteur, admin-compte. Refresh token 30 min."
+    },
+    {
+      "id": "5b8f8d19-240d-4923-947c-f5cd1d67c71f",
+      "name": "Paiement (Stripe)",
+      "baseUrl": "https://api.stripe.com/v1",
+      "auth": "Bearer secret key (côté serveur uniquement)",
+      "risk": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/payment_intents",
+          "notes": "Création d'une intention de paiement (3DS)"
+        },
+        {
+          "method": "GET",
+          "path": "/payment_intents/{id}",
+          "notes": "Statut du paiement"
+        },
+        {
+          "method": "POST",
+          "path": "/refunds",
+          "notes": "Remboursement total ou partiel"
+        }
+      ],
+      "notes": "PCI-DSS : aucune donnée carte ne transite par nos serveurs (Stripe Elements). Webhooks signés."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "type": "frame",
+      "kind": "page",
+      "parentId": null,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": 1,
+      "attrs": {
+        "name": "Accueil",
+        "route": "/",
+        "roles": [
+          "visiteur",
+          "client"
+        ],
+        "description": "Vitrine du portail : accroche, avantages, produits mis en avant et appel à l'action. Accessible sans connexion, personnalisée une fois connecté.",
+        "constraints": [
+          "Temps de chargement < 2 s",
+          "Contenu hero indexable (SEO)"
+        ],
+        "logic": "Si l'utilisateur est authentifié, le menu affiche son compte et les tarifs personnalisés.",
+        "notes": "Page d'entrée du parcours."
+      }
+    },
+    {
+      "id": "bd699b33-ceda-4634-abf4-1c643cdc024e",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "attrs": {
+        "name": "Barre de navigation",
+        "blockType": "menu",
+        "description": "En-tête global : logo, recherche produits, liens Catalogue/Compte, bouton connexion SSO.",
+        "constraints": [
+          "Sticky au scroll",
+          "Repli en menu burger < 768 px"
+        ],
+        "notes": "Présente sur toutes les pages (composant partagé)."
+      }
+    },
+    {
+      "id": "dc66c305-88b3-44ba-9f73-b0310546f891",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "attrs": {
+        "name": "Bandeau d'accroche",
+        "blockType": "hero",
+        "description": "Grand visuel plein écran avec slogan « Votre approvisionnement, simplifié » et bouton « Découvrir le catalogue ».",
+        "constraints": [
+          "Image optimisée WebP < 200 Ko"
+        ],
+        "notes": ""
+      }
+    },
+    {
+      "id": "8f57e57b-dead-49be-a0c5-247aa1733eca",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 240
+      },
+      "attrs": {
+        "name": "Avantages B2B",
+        "blockType": "feature",
+        "description": "Trois arguments icône + texte : tarifs négociés, livraison 24 h, facturation dématérialisée.",
+        "constraints": [],
+        "notes": ""
+      }
+    },
+    {
+      "id": "bb82f06d-20f7-4072-b36c-555be8a342ab",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 360
+      },
+      "attrs": {
+        "name": "Produits mis en avant",
+        "blockType": "grid",
+        "description": "Grille de 3 colonnes (image + libellé + prix + disponibilité) des best-sellers du client.",
+        "constraints": [
+          "Affiche la dispo temps réel"
+        ],
+        "notes": ""
+      }
+    },
+    {
+      "id": "49afe343-0643-4c61-9a98-24ec9107e7ea",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 480
+      },
+      "attrs": {
+        "name": "Demander un devis",
+        "blockType": "cta",
+        "description": "Bloc centré avec bouton « Demander un devis personnalisé ».",
+        "constraints": [],
+        "notes": ""
+      }
+    },
+    {
+      "id": "d935ec9c-eb79-4bdc-925c-bfcfadadb39d",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "position": {
+        "x": 0,
+        "y": 600
+      },
+      "attrs": {
+        "name": "Pied de page",
+        "blockType": "footer",
+        "description": "Liens légaux (CGV, RGPD), contact commercial, réseaux sociaux.",
+        "constraints": [
+          "Lien mentions légales obligatoire"
+        ],
+        "notes": "Composant partagé."
+      }
+    },
+    {
+      "id": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "type": "frame",
+      "kind": "page",
+      "parentId": null,
+      "position": {
+        "x": 700,
+        "y": 0
+      },
+      "lot": 1,
+      "attrs": {
+        "name": "Catalogue",
+        "route": "/catalogue",
+        "roles": [
+          "client"
+        ],
+        "description": "Liste filtrable et paginée des produits avec tarifs négociés du client connecté.",
+        "constraints": [
+          "Pagination serveur",
+          "Filtres persistés dans l'URL"
+        ],
+        "logic": "Les prix et la disponibilité proviennent de l'ERP et dépendent du compte client.",
+        "notes": "Brique prioritaire du MVP."
+      }
+    },
+    {
+      "id": "e8517d87-1595-4076-b4aa-667c07abdab7",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "attrs": {
+        "name": "Barre de navigation",
+        "blockType": "menu",
+        "description": "Même en-tête global que l'accueil.",
+        "constraints": [],
+        "notes": "Composant partagé."
+      }
+    },
+    {
+      "id": "f270109f-a5fe-437f-a72f-dc1bc834e6d4",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "attrs": {
+        "name": "Mise en avant des catégories",
+        "blockType": "damier",
+        "description": "Alternance texte / image sur 2 colonnes présentant les grandes familles de produits.",
+        "constraints": [],
+        "notes": ""
+      }
+    },
+    {
+      "id": "b4560c69-ac75-42ce-860e-8872becc362e",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "position": {
+        "x": 0,
+        "y": 240
+      },
+      "attrs": {
+        "name": "Grille de produits",
+        "blockType": "grid",
+        "description": "Grille paginée des produits (image, réf, prix négocié, stock, bouton ajouter au panier), avec panneau de filtres à gauche.",
+        "constraints": [
+          "Chargement paresseux des images",
+          "50 produits par page"
+        ],
+        "notes": "Cœur de la page."
+      }
+    },
+    {
+      "id": "dcf913e2-f198-4968-bdb7-902695912601",
+      "type": "frame",
+      "kind": "page",
+      "parentId": null,
+      "position": {
+        "x": 1400,
+        "y": 0
+      },
+      "lot": 2,
+      "attrs": {
+        "name": "Mon compte",
+        "route": "/compte",
+        "roles": [
+          "client",
+          "admin-compte"
+        ],
+        "description": "Tableau de bord du client : dernières commandes, factures, informations de l'entreprise et gestion des utilisateurs.",
+        "constraints": [
+          "Accès réservé aux utilisateurs authentifiés"
+        ],
+        "logic": "Le rôle admin-compte débloque la gestion des utilisateurs.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "1be49ec4-4af9-40b2-b458-e94bb1c7364e",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "dcf913e2-f198-4968-bdb7-902695912601",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "attrs": {
+        "name": "Barre de navigation",
+        "blockType": "menu",
+        "description": "En-tête global.",
+        "constraints": [],
+        "notes": "Composant partagé."
+      }
+    },
+    {
+      "id": "45c51895-7972-4a7b-85c0-0862411d6cbf",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "dcf913e2-f198-4968-bdb7-902695912601",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "attrs": {
+        "name": "Tableau de bord (zone libre)",
+        "blockType": "free",
+        "description": "Agencement libre de widgets : commandes en cours, montant à régler, raccourci facturation, dernières factures téléchargeables.",
+        "constraints": [
+          "Widgets réorganisables (v2)"
+        ],
+        "notes": "Bloc libre : gabarit non contraint."
+      }
+    },
+    {
+      "id": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "type": "frame",
+      "kind": "page",
+      "parentId": null,
+      "position": {
+        "x": 2100,
+        "y": 0
+      },
+      "lot": 3,
+      "attrs": {
+        "name": "Commande",
+        "route": "/commande",
+        "roles": [
+          "client",
+          "acheteur"
+        ],
+        "description": "Tunnel de commande : récapitulatif du panier, adresse de livraison, mode de règlement (en ligne ou sur facture), confirmation.",
+        "constraints": [
+          "Idempotence de la validation",
+          "Aucune donnée carte sur nos serveurs (PCI-DSS)"
+        ],
+        "logic": "Le paiement en ligne crée une PaymentIntent Stripe ; le règlement sur facture nécessite un encours autorisé.",
+        "notes": "Dernière étape du parcours d'achat."
+      }
+    },
+    {
+      "id": "6450a907-618a-423f-89e4-f475f8bd2bbc",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "attrs": {
+        "name": "Barre de navigation",
+        "blockType": "menu",
+        "description": "En-tête global.",
+        "constraints": [],
+        "notes": "Composant partagé."
+      }
+    },
+    {
+      "id": "49c108a7-b796-47a9-8f2a-ec391bb0fc83",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "attrs": {
+        "name": "Récapitulatif panier",
+        "blockType": "grid",
+        "description": "Tableau des lignes de commande : produit, quantité éditable, prix unitaire, total ligne, sous-total.",
+        "constraints": [
+          "Recalcul du total à chaque modification de quantité"
+        ],
+        "notes": ""
+      }
+    },
+    {
+      "id": "d6f45449-f310-472d-a065-264f85e20c9d",
+      "type": "frame",
+      "kind": "block",
+      "parentId": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "position": {
+        "x": 0,
+        "y": 240
+      },
+      "attrs": {
+        "name": "Paiement & confirmation",
+        "blockType": "cta",
+        "description": "Choix du mode de règlement puis bouton « Valider la commande » qui déclenche le paiement et la création de commande.",
+        "constraints": [
+          "Bouton désactivé tant que le formulaire n'est pas valide"
+        ],
+        "notes": ""
+      }
+    },
+    {
+      "id": "2cf8f5e6-5c58-45f7-bb63-e9d4a8dade9d",
+      "type": "note",
+      "kind": "behavior",
+      "parentId": null,
+      "attachedTo": "bd699b33-ceda-4634-abf4-1c643cdc024e",
+      "position": {
+        "x": 348,
+        "y": 55
+      },
+      "lot": 2,
+      "attrs": {
+        "name": "Recherche produits",
+        "description": "Recherche instantanée depuis la barre de navigation avec autocomplétion sur la référence et le libellé.",
+        "facet": "front",
+        "trigger": "Saisie d'au moins 2 caractères (debounce 300 ms)",
+        "rules": "Minimum 2 caractères ; 8 suggestions max ; navigation clavier ; Entrée ouvre le catalogue filtré.",
+        "hours": 12,
+        "notes": "Réutilise l'endpoint catalogue avec un paramètre de recherche."
+      }
+    },
+    {
+      "id": "695ac66c-ccc2-4c87-852d-62293e395263",
+      "type": "note",
+      "kind": "behavior",
+      "parentId": null,
+      "attachedTo": "b4560c69-ac75-42ce-860e-8872becc362e",
+      "position": {
+        "x": 1048,
+        "y": 295
+      },
+      "lot": 2,
+      "attrs": {
+        "name": "Filtres catalogue",
+        "description": "Panneau de filtres (catégorie, plage de prix, disponibilité) combinés en ET et persistés dans l'URL.",
+        "facet": "front",
+        "trigger": "Changement d'une facette de filtre",
+        "rules": "Combinaison ET ; synchronisation avec les query params ; bouton « Réinitialiser » ; conserve la pagination cohérente.",
+        "hours": 8,
+        "notes": "Se combine avec la recherche de la barre de navigation."
+      }
+    },
+    {
+      "id": "a75c4a78-0aa1-4d15-8fd7-534da5289280",
+      "type": "note",
+      "kind": "behavior",
+      "parentId": null,
+      "attachedTo": "dcf913e2-f198-4968-bdb7-902695912601",
+      "position": {
+        "x": 1748,
+        "y": 92
+      },
+      "lot": 3,
+      "attrs": {
+        "name": "Notifications de commande",
+        "description": "Alerte l'utilisateur (badge + toast) à chaque changement de statut d'une de ses commandes.",
+        "facet": "fullstack",
+        "trigger": "Réception d'un webhook « statut de commande modifié » depuis l'ERP",
+        "rules": "Dédoublonnage par id de commande ; marquage lu/non lu ; historique 30 jours.",
+        "hours": 10,
+        "notes": "Nécessite un canal temps réel (SSE ou polling)."
+      }
+    },
+    {
+      "id": "33918f75-6e30-4931-ab39-f01f7a6eaeae",
+      "type": "note",
+      "kind": "behavior",
+      "parentId": null,
+      "attachedTo": "49afe343-0643-4c61-9a98-24ec9107e7ea",
+      "position": {
+        "x": 348,
+        "y": 570
+      },
+      "lot": 1,
+      "attrs": {
+        "name": "Demande de devis",
+        "description": "Ouvre un formulaire de demande de devis pré-rempli avec les informations du compte.",
+        "facet": "fullstack",
+        "trigger": "Clic sur le bouton « Demander un devis personnalisé »",
+        "rules": "Champs obligatoires : produits/volumes, échéance ; envoi au commercial référent ; accusé de réception par e-mail.",
+        "hours": 6,
+        "notes": ""
+      }
+    },
+    {
+      "id": "9687f259-4d1a-4517-a6be-b58b81926042",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "bd699b33-ceda-4634-abf4-1c643cdc024e",
+      "position": {
+        "x": 348,
+        "y": 125
+      },
+      "attrs": {
+        "serviceId": "d5b414d7-aeda-463b-a306-ab98c920ebd9",
+        "method": "POST",
+        "path": "/protocol/openid-connect/token",
+        "facet": "fullstack",
+        "notes": "Échange du code d'autorisation contre les jetons après connexion SSO."
+      }
+    },
+    {
+      "id": "8dcc6bdf-44f3-427c-bea5-dc91c5482a01",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "bb82f06d-20f7-4072-b36c-555be8a342ab",
+      "position": {
+        "x": 348,
+        "y": 450
+      },
+      "attrs": {
+        "serviceId": "cf4c30a8-de84-4a07-b2cb-c52c3eb77d27",
+        "method": "GET",
+        "path": "/stock/{sku}",
+        "facet": "back",
+        "notes": "Disponibilité temps réel affichée sur les produits mis en avant."
+      }
+    },
+    {
+      "id": "2e943aca-096b-4529-ae57-671254425002",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "b4560c69-ac75-42ce-860e-8872becc362e",
+      "position": {
+        "x": 1048,
+        "y": 365
+      },
+      "attrs": {
+        "serviceId": "cf4c30a8-de84-4a07-b2cb-c52c3eb77d27",
+        "method": "GET",
+        "path": "/products",
+        "facet": "back",
+        "notes": "Liste paginée avec tarifs négociés (header X-Customer-Id)."
+      }
+    },
+    {
+      "id": "5fa08de7-decf-4bcf-bdc3-38fb3eeab716",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "dcf913e2-f198-4968-bdb7-902695912601",
+      "position": {
+        "x": 1748,
+        "y": 162
+      },
+      "attrs": {
+        "serviceId": "d5b414d7-aeda-463b-a306-ab98c920ebd9",
+        "method": "GET",
+        "path": "/protocol/openid-connect/userinfo",
+        "facet": "back",
+        "notes": "Récupère profil et rôles pour personnaliser le tableau de bord."
+      }
+    },
+    {
+      "id": "abd3bd58-e89e-4505-af79-eba719f12fe2",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "45c51895-7972-4a7b-85c0-0862411d6cbf",
+      "position": {
+        "x": 1748,
+        "y": 210
+      },
+      "attrs": {
+        "serviceId": "cf4c30a8-de84-4a07-b2cb-c52c3eb77d27",
+        "method": "GET",
+        "path": "/invoices",
+        "facet": "back",
+        "notes": "Liste des factures téléchargeables du client."
+      }
+    },
+    {
+      "id": "d3fcdfee-b2ca-476f-90dd-afa8c0d93227",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "d6f45449-f310-472d-a065-264f85e20c9d",
+      "position": {
+        "x": 2448,
+        "y": 295
+      },
+      "attrs": {
+        "serviceId": "cf4c30a8-de84-4a07-b2cb-c52c3eb77d27",
+        "method": "POST",
+        "path": "/orders",
+        "facet": "back",
+        "notes": "Création de la commande après paiement confirmé (idempotency-key)."
+      }
+    },
+    {
+      "id": "634cd941-fd80-454a-8474-10d6c9e7adaf",
+      "type": "note",
+      "kind": "api",
+      "parentId": null,
+      "attachedTo": "d6f45449-f310-472d-a065-264f85e20c9d",
+      "position": {
+        "x": 2448,
+        "y": 365
+      },
+      "attrs": {
+        "serviceId": "5b8f8d19-240d-4923-947c-f5cd1d67c71f",
+        "method": "POST",
+        "path": "/payment_intents",
+        "facet": "back",
+        "notes": "Intention de paiement 3D Secure via Stripe Elements."
+      }
+    },
+    {
+      "id": "demo-mod-catalogue",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "01 · Catalogue produits",
+        "description": "Consultation et mise en avant du catalogue B2B.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-mod-commande",
+      "type": "frame",
+      "kind": "module",
+      "parentId": null,
+      "position": {
+        "x": 360,
+        "y": 0
+      },
+      "lot": null,
+      "attrs": {
+        "name": "02 · Commande & devis",
+        "description": "Parcours de commande, devis et paiement.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cat-01",
+      "type": "feature",
+      "parentId": "demo-mod-catalogue",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": 1,
+      "attrs": {
+        "code": "CAT-01",
+        "name": "Consultation du catalogue",
+        "description": "Lister et filtrer les produits, voir la fiche produit.",
+        "implies": "Grille paginée, recherche, fiche détaillée.",
+        "perimeter": "site",
+        "estimate": "3j",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cat-02",
+      "type": "feature",
+      "parentId": "demo-mod-catalogue",
+      "position": {
+        "x": 0,
+        "y": 152
+      },
+      "lot": 1,
+      "attrs": {
+        "code": "CAT-02",
+        "name": "Mise en avant produits",
+        "description": "Bloc de produits mis en avant sur l’accueil.",
+        "implies": "Sélection éditoriale, carrousel.",
+        "perimeter": "site",
+        "estimate": "1j",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cmd-01",
+      "type": "feature",
+      "parentId": "demo-mod-commande",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "lot": 1,
+      "attrs": {
+        "code": "CMD-01",
+        "name": "Demande de devis",
+        "description": "Formulaire de demande de devis depuis l’accueil.",
+        "implies": "POST demande, email interne.",
+        "perimeter": "site",
+        "estimate": "2j",
+        "toConfirm": "Champs obligatoires à confirmer.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cmd-02",
+      "type": "feature",
+      "parentId": "demo-mod-commande",
+      "position": {
+        "x": 0,
+        "y": 152
+      },
+      "lot": 2,
+      "attrs": {
+        "code": "CMD-02",
+        "name": "Panier & commande",
+        "description": "Récapitulatif panier puis validation de commande.",
+        "implies": "Panier persistant, création commande.",
+        "perimeter": "site",
+        "estimate": "3j",
+        "toConfirm": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cmd-03",
+      "type": "feature",
+      "parentId": "demo-mod-commande",
+      "position": {
+        "x": 0,
+        "y": 304
+      },
+      "lot": 2,
+      "attrs": {
+        "code": "CMD-03",
+        "name": "Paiement",
+        "description": "Paiement en ligne et confirmation.",
+        "implies": "Intégration prestataire de paiement.",
+        "perimeter": "external",
+        "estimate": "",
+        "toConfirm": "Prestataire de paiement à choisir.",
+        "notes": ""
+      }
+    },
+    {
+      "id": "demo-feat-cmd-04",
+      "type": "feature",
+      "parentId": "demo-mod-commande",
+      "position": {
+        "x": 0,
+        "y": 456
+      },
+      "lot": 3,
+      "attrs": {
+        "code": "CMD-04",
+        "name": "Historique des commandes",
+        "description": "Consultation de l’historique dans l’espace compte.",
+        "implies": "Liste des commandes, statuts.",
+        "perimeter": "site",
+        "estimate": "1j",
+        "toConfirm": "",
+        "notes": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "8fd1dd3f-53c5-49c3-8bed-8e736446d702",
+      "type": "navigatesTo",
+      "source": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "target": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "attrs": {
+        "notes": "Depuis le hero et le menu."
+      }
+    },
+    {
+      "id": "81b01b96-74db-4419-ab2e-e089ba09bf84",
+      "type": "navigatesTo",
+      "source": "2ae293fc-d9d5-4977-b2f7-a45cd8a416c4",
+      "target": "dcf913e2-f198-4968-bdb7-902695912601",
+      "attrs": {
+        "notes": "Accès direct à l'espace client depuis le menu ; tracé contourné pour éviter le catalogue.",
+        "render": "portal"
+      }
+    },
+    {
+      "id": "bb1f0f9c-86e9-4588-84ce-8ea41340e748",
+      "type": "navigatesTo",
+      "source": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "target": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "attrs": {
+        "notes": "Passage au tunnel de commande depuis le panier — pastille portail (le trait croiserait Mon compte).",
+        "render": "portal"
+      }
+    },
+    {
+      "id": "9ed91112-0224-40e5-be28-65f3403b276d",
+      "type": "navigatesTo",
+      "source": "dcf913e2-f198-4968-bdb7-902695912601",
+      "target": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "attrs": {}
+    },
+    {
+      "id": "f8eee0f1-d0ce-4c2b-9712-aabfc3966bbd",
+      "type": "dependsOn",
+      "source": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "target": "dcf913e2-f198-4968-bdb7-902695912601",
+      "attrs": {
+        "notes": "La commande requiert un compte client authentifié.",
+        "render": "portal"
+      }
+    },
+    {
+      "id": "demo-rz-cat01-page",
+      "type": "realizedBy",
+      "source": "demo-feat-cat-01",
+      "target": "1b2582f3-4971-4ff5-80ee-e4a567cd19c6",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cat01-grille",
+      "type": "realizedBy",
+      "source": "demo-feat-cat-01",
+      "target": "b4560c69-ac75-42ce-860e-8872becc362e",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cat02-avant",
+      "type": "realizedBy",
+      "source": "demo-feat-cat-02",
+      "target": "bb82f06d-20f7-4072-b36c-555be8a342ab",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cmd01-devis",
+      "type": "realizedBy",
+      "source": "demo-feat-cmd-01",
+      "target": "49afe343-0643-4c61-9a98-24ec9107e7ea",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cmd02-page",
+      "type": "realizedBy",
+      "source": "demo-feat-cmd-02",
+      "target": "54b1fb2c-fc6e-4b70-a8fe-6bca3e6a9094",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cmd02-panier",
+      "type": "realizedBy",
+      "source": "demo-feat-cmd-02",
+      "target": "49c108a7-b796-47a9-8f2a-ec391bb0fc83",
+      "attrs": {}
+    },
+    {
+      "id": "demo-rz-cmd03-paiement",
+      "type": "realizedBy",
+      "source": "demo-feat-cmd-03",
+      "target": "d6f45449-f310-472d-a065-264f85e20c9d",
+      "attrs": {}
+    },
+    {
+      "id": "demo-dep-cmd01-cat01",
+      "type": "dependsOn",
+      "source": "demo-feat-cmd-01",
+      "target": "demo-feat-cat-01",
+      "attrs": {}
+    },
+    {
+      "id": "demo-dep-cmd03-cmd02",
+      "type": "dependsOn",
+      "source": "demo-feat-cmd-03",
+      "target": "demo-feat-cmd-02",
+      "attrs": {}
+    },
+    {
+      "id": "demo-dep-cmd04-cmd02",
+      "type": "dependsOn",
+      "source": "demo-feat-cmd-04",
+      "target": "demo-feat-cmd-02",
+      "attrs": {}
+    }
+  ]
+}
