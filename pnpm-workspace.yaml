@@ -11,3 +11,8 @@ packages:
 # premier `pnpm start` sur une machine neuve (ERR_PNPM_IGNORED_BUILDS).
 onlyBuiltDependencies:
   - esbuild
+
+# Pas de re-vérification des deps à chaque `pnpm run` : sur une machine de déploiement
+# l'état installé fait foi, et ce check refusait de démarrer tant qu'il jugeait le
+# node_modules « périmé » (boucle ERR_PNPM_IGNORED_BUILDS sur Chappie).
+verifyDepsBeforeRun: false
