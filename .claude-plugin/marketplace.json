@@ -1,0 +1,11 @@
+{
+  "name": "flooow",
+  "owner": { "name": "Hugo (Pilot'in)" },
+  "plugins": [
+    {
+      "name": "flooow",
+      "source": "./",
+      "description": "Cadrage visuel agentique piloté par la CLI flooow (graphe + fiches + commentaires pour Claude)."
+    }
+  ]
+}

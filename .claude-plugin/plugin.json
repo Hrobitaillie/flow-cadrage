@@ -1,0 +1,6 @@
+{
+  "name": "flooow",
+  "description": "Cadrage visuel agentique : Claude génère et entretient le graphe d'un projet (pages, fonctionnalités, APIs), traite les commentaires « pour Claude », et développe fonctionnalité par fonctionnalité.",
+  "version": "0.1.0",
+  "author": { "name": "Hugo (Pilot'in)" }
+}

@@ -85,6 +85,26 @@ le narratif typé (`docs/decisions|questions|decouvertes|spec/`) et `docs/AGENTS
 (mode d'emploi auto-porteur pour tout agent travaillant dans ce dépôt). Côté kit,
 `data/<dossier>` devient un lien symbolique — le hub et la CLI voient le projet normalement.
 
+## Plugin Claude Code
+
+Le dépôt est aussi un plugin Claude Code (skills `/flooow:analyser`, `/flooow:commentaires`,
+`/flooow:etape`). L'installer depuis le **clone local** (pas depuis GitHub : les skills
+invoquent la CLI du kit via `${CLAUDE_PLUGIN_ROOT}`, qui doit pointer sur un kit installé
+et buildé) :
+
+```
+/plugin marketplace add ~/Documents/GitHub/flooow
+/plugin install flooow@flooow
+```
+
+- `/flooow:analyser <dossier/fichier> <codebase>` — génère le cadrage depuis un codebase
+  (local ou ssh, lecture seule) : fan-out de sous-agents sonnet par périmètre, écriture par
+  lots d'ops, fiches courtes.
+- `/flooow:commentaires <dossier/fichier>` — relève les fils « ✳ pour Claude », traite,
+  répond et résout dans le même lot.
+- `/flooow:etape <dossier/fichier> [poignée]` — développe la prochaine fonctionnalité non
+  réalisée (lots + dépendances), puis remet le graphe à jour.
+
 ## Dev
 
 ```bash
